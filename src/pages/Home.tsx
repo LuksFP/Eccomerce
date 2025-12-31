@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
-import { Product, FilterState, ProductCategory, SortOption } from "@/types/product";
-import { fetchProducts } from "@/data/products";
+import { FilterState, ProductCategory, SortOption } from "@/types/product";
+import { useProducts } from "@/context/ProductsContext";
 import { useDebounce } from "@/hooks/useDebounce";
 import { Header } from "@/components/Header";
 import { Filters } from "@/components/Filters";
@@ -11,7 +11,7 @@ import { Sparkles } from "lucide-react";
 
 const Home = () => {
   const [searchParams, setSearchParams] = useSearchParams();
-  const [products, setProducts] = useState<Product[]>([]);
+  const { products } = useProducts();
   const [isLoading, setIsLoading] = useState(true);
   const [filters, setFilters] = useState<FilterState>({
     search: searchParams.get("search") || "",
@@ -21,21 +21,10 @@ const Home = () => {
 
   const debouncedSearch = useDebounce(filters.search, 300);
 
-  // Fetch products
+  // Simulate loading on first mount
   useEffect(() => {
-    const loadProducts = async () => {
-      setIsLoading(true);
-      try {
-        const data = await fetchProducts();
-        setProducts(data);
-      } catch (error) {
-        console.error("Error loading products:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadProducts();
+    const timer = setTimeout(() => setIsLoading(false), 600);
+    return () => clearTimeout(timer);
   }, []);
 
   // Sync filters with URL

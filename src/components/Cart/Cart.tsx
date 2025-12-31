@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import { useCart, CartItem } from "@/context/CartContext";
 import { formatPrice } from "@/utils/formatPrice";
 import { Button } from "@/components/ui/button";
@@ -92,7 +93,13 @@ const EmptyCart = () => (
 );
 
 export const Cart = () => {
+  const navigate = useNavigate();
   const { items, isOpen, setCartOpen, totalItems, totalPrice, clearCart } = useCart();
+
+  const handleCheckout = () => {
+    setCartOpen(false);
+    navigate("/checkout");
+  };
 
   return (
     <Sheet open={isOpen} onOpenChange={setCartOpen}>
@@ -143,9 +150,8 @@ export const Cart = () => {
                 </div>
               </div>
 
-              {/* Actions */}
               <div className="space-y-2">
-                <Button variant="cart" className="w-full" size="lg">
+                <Button variant="cart" className="w-full" size="lg" onClick={handleCheckout}>
                   Finalizar Compra
                 </Button>
                 <Button
