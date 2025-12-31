@@ -1,16 +1,19 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Product, categoryLabels, categoryBadgeVariant } from "@/types/product";
+import { categoryLabels, categoryBadgeVariant } from "@/types/product";
 import { useProducts } from "@/context/ProductsContext";
+import { useReviews } from "@/context/ReviewsContext";
 import { formatPrice, calculateDiscount } from "@/utils/formatPrice";
 import { useCart } from "@/context/CartContext";
 import { useFavorites } from "@/context/FavoritesContext";
 import { useAuth } from "@/context/AuthContext";
 import { Header } from "@/components/Header";
 import { Cart } from "@/components/Cart";
+import { ReviewForm, ReviewsList } from "@/components/Reviews";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   ShoppingCart,
   Star,
@@ -21,6 +24,7 @@ import {
   Minus,
   Plus,
   Heart,
+  MessageSquare,
 } from "lucide-react";
 
 const ProductSkeleton = () => (
@@ -60,6 +64,7 @@ const ProductDetails = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { getProductById } = useProducts();
+  const { getProductStats } = useReviews();
   const { addItem, getItemQuantity } = useCart();
   const { isFavorite, toggleFavorite } = useFavorites();
   const { isAuthenticated } = useAuth();
@@ -68,6 +73,7 @@ const ProductDetails = () => {
   const [quantity, setQuantity] = useState(1);
 
   const product = id ? getProductById(id) : undefined;
+  const reviewStats = id ? getProductStats(id) : null;
   const quantityInCart = product ? getItemQuantity(product.id) : 0;
   const availableStock = product ? product.stock - quantityInCart : 0;
   const isOutOfStock = product?.stock === 0;
@@ -188,14 +194,14 @@ const ProductDetails = () => {
             </h1>
 
             {/* Rating */}
-            {product.rating && (
+            {reviewStats && reviewStats.totalReviews > 0 ? (
               <div className="flex items-center gap-2">
                 <div className="flex items-center gap-1">
                   {Array.from({ length: 5 }).map((_, i) => (
                     <Star
                       key={i}
                       className={`h-4 w-4 ${
-                        i < Math.floor(product.rating!)
+                        i < Math.round(reviewStats.averageRating)
                           ? "fill-warning text-warning"
                           : "fill-muted text-muted"
                       }`}
@@ -203,12 +209,14 @@ const ProductDetails = () => {
                   ))}
                 </div>
                 <span className="text-sm font-medium">
-                  {product.rating.toFixed(1)}
+                  {reviewStats.averageRating.toFixed(1)}
                 </span>
                 <span className="text-sm text-muted-foreground">
-                  (120 avaliações)
+                  ({reviewStats.totalReviews} {reviewStats.totalReviews === 1 ? "avaliação" : "avaliações"})
                 </span>
               </div>
+            ) : (
+              <p className="text-sm text-muted-foreground">Nenhuma avaliação ainda</p>
             )}
 
             {/* Price */}
@@ -322,6 +330,33 @@ const ProductDetails = () => {
             </div>
           </div>
         </div>
+
+        {/* Reviews Section */}
+        <section className="mt-16">
+          <div className="flex items-center gap-2 mb-8">
+            <MessageSquare className="h-6 w-6 text-primary" />
+            <h2 className="font-display text-2xl font-bold">Avaliações</h2>
+          </div>
+
+          <div className="grid lg:grid-cols-3 gap-8">
+            {/* Review Form */}
+            <div className="lg:col-span-1">
+              <ReviewForm productId={product.id} />
+            </div>
+
+            {/* Reviews List */}
+            <div className="lg:col-span-2">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">O que os clientes dizem</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ReviewsList productId={product.id} />
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </section>
       </main>
     </div>
   );

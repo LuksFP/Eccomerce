@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { useCart } from "@/context/CartContext";
 import { useFavorites } from "@/context/FavoritesContext";
 import { useAuth } from "@/context/AuthContext";
+import { useReviews } from "@/context/ReviewsContext";
 import { ShoppingCart, Star, Heart } from "lucide-react";
 
 type ProductCardProps = {
@@ -16,6 +17,9 @@ export const ProductCard = ({ product }: ProductCardProps) => {
   const { addItem, getItemQuantity } = useCart();
   const { isFavorite, toggleFavorite } = useFavorites();
   const { isAuthenticated } = useAuth();
+  const { getProductStats } = useReviews();
+  
+  const reviewStats = getProductStats(product.id);
   
   const isOutOfStock = product.stock === 0;
   const discount = product.originalPrice
@@ -96,14 +100,21 @@ export const ProductCard = ({ product }: ProductCardProps) => {
         {/* Content */}
         <div className="p-4 flex flex-col flex-1">
           {/* Rating */}
-          {product.rating && (
+          {reviewStats.totalReviews > 0 ? (
+            <div className="flex items-center gap-1 mb-2">
+              <Star className="h-3.5 w-3.5 fill-warning text-warning" />
+              <span className="text-xs font-medium text-muted-foreground">
+                {reviewStats.averageRating.toFixed(1)} ({reviewStats.totalReviews})
+              </span>
+            </div>
+          ) : product.rating ? (
             <div className="flex items-center gap-1 mb-2">
               <Star className="h-3.5 w-3.5 fill-warning text-warning" />
               <span className="text-xs font-medium text-muted-foreground">
                 {product.rating.toFixed(1)}
               </span>
             </div>
-          )}
+          ) : null}
 
           {/* Name */}
           <h3 className="font-medium text-card-foreground group-hover:text-primary transition-colors line-clamp-2 mb-2">
