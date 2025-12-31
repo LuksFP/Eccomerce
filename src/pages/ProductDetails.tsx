@@ -1,9 +1,11 @@
 import { useState, useEffect } from "react";
-import { useParams, Link, useNavigate } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { Product, categoryLabels, categoryBadgeVariant } from "@/types/product";
-import { fetchProductById } from "@/data/products";
+import { useProducts } from "@/context/ProductsContext";
 import { formatPrice, calculateDiscount } from "@/utils/formatPrice";
 import { useCart } from "@/context/CartContext";
+import { useFavorites } from "@/context/FavoritesContext";
+import { useAuth } from "@/context/AuthContext";
 import { Header } from "@/components/Header";
 import { Cart } from "@/components/Cart";
 import { Button } from "@/components/ui/button";
@@ -18,6 +20,7 @@ import {
   Shield,
   Minus,
   Plus,
+  Heart,
 } from "lucide-react";
 
 const ProductSkeleton = () => (
@@ -36,7 +39,7 @@ const ProductSkeleton = () => (
   </div>
 );
 
-const NotFound = () => {
+const NotFoundState = () => {
   const navigate = useNavigate();
 
   return (
@@ -56,31 +59,25 @@ const NotFound = () => {
 const ProductDetails = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { getProductById } = useProducts();
   const { addItem, getItemQuantity } = useCart();
-  const [product, setProduct] = useState<Product | null>(null);
+  const { isFavorite, toggleFavorite } = useFavorites();
+  const { isAuthenticated } = useAuth();
+  
   const [isLoading, setIsLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
 
+  const product = id ? getProductById(id) : undefined;
   const quantityInCart = product ? getItemQuantity(product.id) : 0;
   const availableStock = product ? product.stock - quantityInCart : 0;
   const isOutOfStock = product?.stock === 0;
   const canAddMore = availableStock > 0;
+  const isFav = product ? isFavorite(product.id) : false;
 
   useEffect(() => {
-    const loadProduct = async () => {
-      if (!id) return;
-      setIsLoading(true);
-      try {
-        const data = await fetchProductById(id);
-        setProduct(data || null);
-      } catch (error) {
-        console.error("Error loading product:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadProduct();
+    // Simulate loading
+    const timer = setTimeout(() => setIsLoading(false), 400);
+    return () => clearTimeout(timer);
   }, [id]);
 
   const handleAddToCart = () => {
@@ -91,6 +88,12 @@ const ProductDetails = () => {
       addItem(product);
     }
     setQuantity(1);
+  };
+
+  const handleToggleFavorite = () => {
+    if (product && isAuthenticated) {
+      toggleFavorite(product);
+    }
   };
 
   const discount = product?.originalPrice
@@ -111,7 +114,7 @@ const ProductDetails = () => {
       <div className="min-h-screen bg-background">
         <Header />
         <Cart />
-        <NotFound />
+        <NotFoundState />
       </div>
     );
   }
@@ -155,6 +158,21 @@ const ProductDetails = () => {
                 <Badge variant="destructive">-{discount}%</Badge>
               )}
             </div>
+
+            {/* Favorite button */}
+            {isAuthenticated && (
+              <button
+                onClick={handleToggleFavorite}
+                className={`absolute top-4 right-4 w-11 h-11 rounded-full flex items-center justify-center transition-all duration-200 ${
+                  isFav
+                    ? "bg-destructive text-destructive-foreground"
+                    : "bg-card/90 backdrop-blur-sm text-muted-foreground hover:text-destructive"
+                } shadow-lg`}
+                aria-label={isFav ? "Remover dos favoritos" : "Adicionar aos favoritos"}
+              >
+                <Heart className={`h-5 w-5 ${isFav ? "fill-current" : ""}`} />
+              </button>
+            )}
           </div>
 
           {/* Details */}

@@ -4,7 +4,9 @@ import { formatPrice, calculateDiscount } from "@/utils/formatPrice";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/context/CartContext";
-import { ShoppingCart, Star, Eye } from "lucide-react";
+import { useFavorites } from "@/context/FavoritesContext";
+import { useAuth } from "@/context/AuthContext";
+import { ShoppingCart, Star, Heart } from "lucide-react";
 
 type ProductCardProps = {
   product: Product;
@@ -12,18 +14,30 @@ type ProductCardProps = {
 
 export const ProductCard = ({ product }: ProductCardProps) => {
   const { addItem, getItemQuantity } = useCart();
+  const { isFavorite, toggleFavorite } = useFavorites();
+  const { isAuthenticated } = useAuth();
+  
   const isOutOfStock = product.stock === 0;
   const discount = product.originalPrice
     ? calculateDiscount(product.originalPrice, product.price)
     : 0;
   const quantityInCart = getItemQuantity(product.id);
   const canAddMore = quantityInCart < product.stock;
+  const isFav = isFavorite(product.id);
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     if (!isOutOfStock && canAddMore) {
       addItem(product);
+    }
+  };
+
+  const handleToggleFavorite = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (isAuthenticated) {
+      toggleFavorite(product);
     }
   };
 
@@ -63,22 +77,20 @@ export const ProductCard = ({ product }: ProductCardProps) => {
             </Badge>
           </div>
 
-          {/* Hover overlay */}
-          <div className="absolute inset-0 bg-foreground/0 group-hover:bg-foreground/5 transition-colors duration-300 flex items-center justify-center">
-            <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex gap-2">
-              <Button
-                size="icon"
-                variant="secondary"
-                className="bg-card/90 backdrop-blur-sm hover:bg-card shadow-lg"
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                }}
-              >
-                <Eye className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
+          {/* Favorite button */}
+          {isAuthenticated && (
+            <button
+              onClick={handleToggleFavorite}
+              className={`absolute bottom-3 right-3 w-9 h-9 rounded-full flex items-center justify-center transition-all duration-200 ${
+                isFav
+                  ? "bg-destructive text-destructive-foreground"
+                  : "bg-card/90 backdrop-blur-sm text-muted-foreground hover:text-destructive"
+              } shadow-lg`}
+              aria-label={isFav ? "Remover dos favoritos" : "Adicionar aos favoritos"}
+            >
+              <Heart className={`h-4 w-4 ${isFav ? "fill-current" : ""}`} />
+            </button>
+          )}
         </div>
 
         {/* Content */}
