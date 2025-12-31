@@ -8,6 +8,7 @@ import { CartProvider } from "@/context/CartContext";
 import { FavoritesProvider } from "@/context/FavoritesContext";
 import { ProductsProvider } from "@/context/ProductsContext";
 import { OrdersProvider } from "@/context/OrdersContext";
+import { ReviewsProvider } from "@/context/ReviewsContext";
 import Home from "./pages/Home";
 import ProductDetails from "./pages/ProductDetails";
 import AuthPage from "./pages/AuthPage";
@@ -26,19 +27,21 @@ const App = () => (
           <CartProvider>
             <FavoritesProvider>
               <OrdersProvider>
-                <Toaster />
-                <Sonner />
-                <BrowserRouter>
-                  <Routes>
-                    <Route path="/" element={<Home />} />
-                    <Route path="/produto/:id" element={<ProductDetails />} />
-                    <Route path="/auth" element={<AuthPage />} />
-                    <Route path="/checkout" element={<CheckoutPage />} />
-                    <Route path="/meus-pedidos" element={<MyOrdersPage />} />
-                    <Route path="/admin" element={<AdminPage />} />
-                    <Route path="*" element={<NotFound />} />
-                  </Routes>
-                </BrowserRouter>
+                <ReviewsProvider>
+                  <Toaster />
+                  <Sonner />
+                  <BrowserRouter>
+                    <Routes>
+                      <Route path="/" element={<Home />} />
+                      <Route path="/produto/:id" element={<ProductDetails />} />
+                      <Route path="/auth" element={<AuthPage />} />
+                      <Route path="/checkout" element={<CheckoutPage />} />
+                      <Route path="/meus-pedidos" element={<MyOrdersPage />} />
+                      <Route path="/admin" element={<AdminPage />} />
+                      <Route path="*" element={<NotFound />} />
+                    </Routes>
+                  </BrowserRouter>
+                </ReviewsProvider>
               </OrdersProvider>
             </FavoritesProvider>
           </CartProvider>
