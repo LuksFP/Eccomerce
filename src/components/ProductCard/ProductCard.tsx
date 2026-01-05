@@ -41,7 +41,7 @@ export const ProductCard = ({ product }: ProductCardProps) => {
     e.preventDefault();
     e.stopPropagation();
     if (isAuthenticated) {
-      toggleFavorite(product);
+      toggleFavorite(product.id);
     }
   };
 

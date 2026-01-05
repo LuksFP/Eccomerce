@@ -1,107 +1,165 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
-import { Product, ProductCategory } from "@/types/product";
-import { products as initialProducts } from "@/data/products";
-import { useAuth } from "./AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { products as mockProducts } from "@/data/products";
+import { Product, ProductCategory } from "@/types/product";
 
 type ProductsContextType = {
   products: Product[];
+  isLoading: boolean;
   getProductById: (id: string) => Product | undefined;
-  // Admin functions
-  addProduct: (product: Omit<Product, "id">) => void;
-  updateProduct: (id: string, updates: Partial<Product>) => void;
-  deleteProduct: (id: string) => void;
-  updateStock: (id: string, newStock: number) => void;
+  addProduct: (product: Omit<Product, "id">) => Promise<void>;
+  updateProduct: (id: string, updates: Partial<Product>) => Promise<void>;
+  deleteProduct: (id: string) => Promise<void>;
+  updateStock: (id: string, newStock: number) => Promise<void>;
+  seedProducts: () => Promise<void>;
 };
 
 const ProductsContext = createContext<ProductsContextType | undefined>(undefined);
 
-const PRODUCTS_STORAGE_KEY = "ecommerce-products";
-
 export const ProductsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { isAdmin } = useAuth();
   const [products, setProducts] = useState<Product[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Load products on mount
-  useEffect(() => {
-    try {
-      const stored = localStorage.getItem(PRODUCTS_STORAGE_KEY);
-      if (stored) {
-        setProducts(JSON.parse(stored));
-      } else {
-        // Initialize with mock data
-        setProducts(initialProducts);
-        localStorage.setItem(PRODUCTS_STORAGE_KEY, JSON.stringify(initialProducts));
-      }
-    } catch {
-      setProducts(initialProducts);
+  const fetchProducts = useCallback(async () => {
+    setIsLoading(true);
+    const { data, error } = await supabase
+      .from("products")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (!error && data) {
+      setProducts(data.map(p => ({
+        id: p.id,
+        name: p.name,
+        description: p.description || undefined,
+        price: Number(p.price),
+        originalPrice: p.original_price ? Number(p.original_price) : undefined,
+        image: p.image,
+        category: p.category as ProductCategory,
+        stock: p.stock,
+        rating: p.rating ? Number(p.rating) : undefined,
+      })));
     }
+    setIsLoading(false);
   }, []);
 
-  // Save products when they change
   useEffect(() => {
-    if (products.length > 0) {
-      localStorage.setItem(PRODUCTS_STORAGE_KEY, JSON.stringify(products));
-    }
-  }, [products]);
+    fetchProducts();
+  }, [fetchProducts]);
 
   const getProductById = useCallback(
     (id: string) => products.find((p) => p.id === id),
     [products]
   );
 
-  const addProduct = useCallback(
-    (product: Omit<Product, "id">) => {
-      if (!isAdmin) return;
-      const newProduct: Product = {
-        ...product,
-        id: `product-${Date.now()}`,
-      };
-      setProducts((prev) => [...prev, newProduct]);
+  const seedProducts = useCallback(async () => {
+    // Insert mock products into database
+    const productsToInsert = mockProducts.map(p => ({
+      name: p.name,
+      description: p.description,
+      price: p.price,
+      original_price: p.originalPrice || null,
+      image: p.image,
+      category: p.category,
+      stock: p.stock,
+      rating: p.rating || null,
+    }));
+
+    const { error } = await supabase
+      .from("products")
+      .insert(productsToInsert);
+
+    if (error) {
+      toast({ title: "Erro ao adicionar produtos", variant: "destructive" });
+    } else {
+      toast({ title: "Produtos adicionados com sucesso!" });
+      fetchProducts();
+    }
+  }, [fetchProducts]);
+
+  const addProduct = useCallback(async (product: Omit<Product, "id">) => {
+    const { error } = await supabase
+      .from("products")
+      .insert({
+        name: product.name,
+        description: product.description,
+        price: product.price,
+        original_price: product.originalPrice,
+        image: product.image,
+        category: product.category,
+        stock: product.stock,
+        rating: product.rating,
+      });
+
+    if (error) {
+      toast({ title: "Erro ao adicionar produto", variant: "destructive" });
+    } else {
       toast({ title: "Produto adicionado" });
-    },
-    [isAdmin]
-  );
+      fetchProducts();
+    }
+  }, [fetchProducts]);
 
-  const updateProduct = useCallback(
-    (id: string, updates: Partial<Product>) => {
-      if (!isAdmin) return;
-      setProducts((prev) =>
-        prev.map((p) => (p.id === id ? { ...p, ...updates } : p))
-      );
+  const updateProduct = useCallback(async (id: string, updates: Partial<Product>) => {
+    const dbUpdates: Record<string, unknown> = {};
+    if (updates.name !== undefined) dbUpdates.name = updates.name;
+    if (updates.description !== undefined) dbUpdates.description = updates.description;
+    if (updates.price !== undefined) dbUpdates.price = updates.price;
+    if (updates.originalPrice !== undefined) dbUpdates.original_price = updates.originalPrice;
+    if (updates.image !== undefined) dbUpdates.image = updates.image;
+    if (updates.category !== undefined) dbUpdates.category = updates.category;
+    if (updates.stock !== undefined) dbUpdates.stock = updates.stock;
+    if (updates.rating !== undefined) dbUpdates.rating = updates.rating;
+
+    const { error } = await supabase
+      .from("products")
+      .update(dbUpdates)
+      .eq("id", id);
+
+    if (error) {
+      toast({ title: "Erro ao atualizar produto", variant: "destructive" });
+    } else {
       toast({ title: "Produto atualizado" });
-    },
-    [isAdmin]
-  );
+      fetchProducts();
+    }
+  }, [fetchProducts]);
 
-  const deleteProduct = useCallback(
-    (id: string) => {
-      if (!isAdmin) return;
-      setProducts((prev) => prev.filter((p) => p.id !== id));
+  const deleteProduct = useCallback(async (id: string) => {
+    const { error } = await supabase
+      .from("products")
+      .delete()
+      .eq("id", id);
+
+    if (error) {
+      toast({ title: "Erro ao remover produto", variant: "destructive" });
+    } else {
       toast({ title: "Produto removido" });
-    },
-    [isAdmin]
-  );
+      fetchProducts();
+    }
+  }, [fetchProducts]);
 
-  const updateStock = useCallback(
-    (id: string, newStock: number) => {
-      if (!isAdmin) return;
-      setProducts((prev) =>
-        prev.map((p) => (p.id === id ? { ...p, stock: Math.max(0, newStock) } : p))
-      );
-    },
-    [isAdmin]
-  );
+  const updateStock = useCallback(async (id: string, newStock: number) => {
+    const { error } = await supabase
+      .from("products")
+      .update({ stock: Math.max(0, newStock) })
+      .eq("id", id);
+
+    if (!error) {
+      fetchProducts();
+    }
+  }, [fetchProducts]);
 
   return (
     <ProductsContext.Provider
       value={{
         products,
+        isLoading,
         getProductById,
         addProduct,
         updateProduct,
         deleteProduct,
         updateStock,
+        seedProducts,
       }}
     >
       {children}
