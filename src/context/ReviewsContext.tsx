@@ -87,7 +87,7 @@ const initialReviews: Review[] = [
 ];
 
 export const ReviewsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const [reviews, setReviews] = useState<Review[]>([]);
 
   // Load reviews on mount
@@ -187,7 +187,7 @@ export const ReviewsProvider: React.FC<{ children: React.ReactNode }> = ({ child
         id: `review-${Date.now()}`,
         productId,
         userId: user.id,
-        userName: user.name,
+        userName: profile?.name || "Usuário",
         rating,
         title,
         comment,

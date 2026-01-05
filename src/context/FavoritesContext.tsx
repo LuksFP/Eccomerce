@@ -1,88 +1,93 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
-import { Product } from "@/types/product";
+import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "./AuthContext";
-import { toast } from "@/hooks/use-toast";
 
 type FavoritesContextType = {
-  favorites: Product[];
-  addFavorite: (product: Product) => void;
-  removeFavorite: (productId: string) => void;
+  favorites: string[];
+  isLoading: boolean;
+  addFavorite: (productId: string) => Promise<void>;
+  removeFavorite: (productId: string) => Promise<void>;
   isFavorite: (productId: string) => boolean;
-  toggleFavorite: (product: Product) => void;
+  toggleFavorite: (productId: string) => Promise<void>;
 };
 
 const FavoritesContext = createContext<FavoritesContextType | undefined>(undefined);
 
-const FAVORITES_STORAGE_KEY = "ecommerce-favorites";
-
-const getStorageKey = (userId: string | undefined) => 
-  userId ? `${FAVORITES_STORAGE_KEY}-${userId}` : FAVORITES_STORAGE_KEY;
-
 export const FavoritesProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { user } = useAuth();
-  const [favorites, setFavorites] = useState<Product[]>([]);
+  const { user, isAuthenticated } = useAuth();
+  const [favorites, setFavorites] = useState<string[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
-  // Load favorites when user changes
+  const fetchFavorites = useCallback(async () => {
+    if (!user) {
+      setFavorites([]);
+      return;
+    }
+
+    setIsLoading(true);
+    const { data, error } = await supabase
+      .from("favorites")
+      .select("product_id")
+      .eq("user_id", user.id);
+
+    if (!error && data) {
+      setFavorites(data.map(f => f.product_id));
+    }
+    setIsLoading(false);
+  }, [user]);
+
   useEffect(() => {
-    try {
-      const key = getStorageKey(user?.id);
-      const stored = localStorage.getItem(key);
-      if (stored) {
-        setFavorites(JSON.parse(stored));
-      } else {
-        setFavorites([]);
-      }
-    } catch {
+    if (isAuthenticated) {
+      fetchFavorites();
+    } else {
       setFavorites([]);
     }
-  }, [user?.id]);
+  }, [isAuthenticated, fetchFavorites]);
 
-  // Save favorites when they change
-  useEffect(() => {
-    if (user?.id) {
-      const key = getStorageKey(user.id);
-      localStorage.setItem(key, JSON.stringify(favorites));
+  const addFavorite = useCallback(async (productId: string) => {
+    if (!user) return;
+
+    const { error } = await supabase
+      .from("favorites")
+      .insert({ user_id: user.id, product_id: productId });
+
+    if (!error) {
+      setFavorites(prev => [...prev, productId]);
     }
-  }, [favorites, user?.id]);
+  }, [user]);
 
-  const addFavorite = useCallback((product: Product) => {
-    setFavorites((prev) => {
-      if (prev.find((p) => p.id === product.id)) return prev;
-      return [...prev, product];
-    });
-    toast({
-      title: "Adicionado aos favoritos",
-      description: product.name,
-    });
-  }, []);
+  const removeFavorite = useCallback(async (productId: string) => {
+    if (!user) return;
 
-  const removeFavorite = useCallback((productId: string) => {
-    setFavorites((prev) => prev.filter((p) => p.id !== productId));
-    toast({
-      title: "Removido dos favoritos",
-    });
-  }, []);
+    const { error } = await supabase
+      .from("favorites")
+      .delete()
+      .eq("user_id", user.id)
+      .eq("product_id", productId);
+
+    if (!error) {
+      setFavorites(prev => prev.filter(id => id !== productId));
+    }
+  }, [user]);
 
   const isFavorite = useCallback(
-    (productId: string) => favorites.some((p) => p.id === productId),
+    (productId: string) => favorites.includes(productId),
     [favorites]
   );
 
-  const toggleFavorite = useCallback(
-    (product: Product) => {
-      if (isFavorite(product.id)) {
-        removeFavorite(product.id);
-      } else {
-        addFavorite(product);
-      }
-    },
-    [isFavorite, addFavorite, removeFavorite]
-  );
+  const toggleFavorite = useCallback(async (productId: string) => {
+    if (isFavorite(productId)) {
+      await removeFavorite(productId);
+    } else {
+      await addFavorite(productId);
+    }
+  }, [isFavorite, addFavorite, removeFavorite]);
 
   return (
     <FavoritesContext.Provider
       value={{
         favorites,
+        isLoading,
         addFavorite,
         removeFavorite,
         isFavorite,

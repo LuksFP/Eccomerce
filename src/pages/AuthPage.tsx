@@ -62,7 +62,7 @@ const AuthPage = () => {
     }
 
     setIsLoading(true);
-    const success = await login({ email: result.data.email, password: result.data.password });
+    const success = await login(result.data.email, result.data.password);
     setIsLoading(false);
 
     if (success) {
@@ -85,11 +85,11 @@ const AuthPage = () => {
     }
 
     setIsLoading(true);
-    const success = await signup({
-      name: result.data.name,
-      email: result.data.email,
-      password: result.data.password,
-    });
+    const success = await signup(
+      result.data.email,
+      result.data.password,
+      result.data.name
+    );
     setIsLoading(false);
 
     if (success) {

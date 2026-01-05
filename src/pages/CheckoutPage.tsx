@@ -13,6 +13,7 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Separator } from "@/components/ui/separator";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { toast } from "@/hooks/use-toast";
 import {
   ChevronLeft,
   CreditCard,
@@ -23,6 +24,8 @@ import {
   Loader2,
   AlertCircle,
   Package,
+  Tag,
+  X,
 } from "lucide-react";
 import { z } from "zod";
 
@@ -40,9 +43,9 @@ const addressSchema = z.object({
 
 const CheckoutPage = () => {
   const navigate = useNavigate();
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated, profile } = useAuth();
   const { items, totalPrice, totalItems } = useCart();
-  const { createOrder } = useOrders();
+  const { createOrder, validateCoupon } = useOrders();
 
   const [step, setStep] = useState<"address" | "payment" | "confirmation">("address");
   const [isLoading, setIsLoading] = useState(false);
@@ -50,7 +53,7 @@ const CheckoutPage = () => {
   const [orderId, setOrderId] = useState<string | null>(null);
 
   const [address, setAddress] = useState<ShippingAddress>({
-    fullName: user?.name || "",
+    fullName: profile?.name || "",
     street: "",
     number: "",
     complement: "",
@@ -62,6 +65,46 @@ const CheckoutPage = () => {
   });
 
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("credit_card");
+  
+  // Coupon state
+  const [couponInput, setCouponInput] = useState("");
+  const [appliedCoupon, setAppliedCoupon] = useState<{ code: string; discount: number; message: string } | null>(null);
+  const [couponLoading, setCouponLoading] = useState(false);
+  const [couponError, setCouponError] = useState("");
+
+  // Calculate shipping and totals
+  const shippingCost = paymentMethod === "pix" ? 0 : 25;
+  const pixDiscount = paymentMethod === "pix" ? totalPrice * 0.05 : 0;
+  const couponDiscount = appliedCoupon?.discount || 0;
+  const finalTotal = Math.max(0, totalPrice + shippingCost - pixDiscount - couponDiscount);
+
+  const handleApplyCoupon = async () => {
+    if (!couponInput.trim()) return;
+    
+    setCouponLoading(true);
+    setCouponError("");
+    
+    const result = await validateCoupon(couponInput.trim(), totalPrice);
+    
+    if (result.isValid) {
+      setAppliedCoupon({
+        code: result.code || couponInput.toUpperCase(),
+        discount: result.discount,
+        message: result.message,
+      });
+      toast({ title: "Cupom aplicado!", description: result.message });
+      setCouponInput("");
+    } else {
+      setCouponError(result.message);
+    }
+    
+    setCouponLoading(false);
+  };
+
+  const handleRemoveCoupon = () => {
+    setAppliedCoupon(null);
+    setCouponError("");
+  };
 
   // Redirect if not authenticated or cart is empty
   if (!isAuthenticated) {
@@ -121,7 +164,12 @@ const CheckoutPage = () => {
     // Simulate payment processing
     await new Promise((resolve) => setTimeout(resolve, 1500));
 
-    const order = createOrder(address, paymentMethod);
+    const order = await createOrder(
+      address, 
+      paymentMethod, 
+      appliedCoupon?.code, 
+      couponDiscount + pixDiscount
+    );
 
     if (order) {
       setOrderId(order.id);
@@ -498,6 +546,46 @@ const CheckoutPage = () => {
 
                   <Separator />
 
+                  {/* Coupon Input */}
+                  <div className="space-y-2">
+                    <Label className="flex items-center gap-1 text-sm">
+                      <Tag className="h-3 w-3" /> Cupom de Desconto
+                    </Label>
+                    {appliedCoupon ? (
+                      <div className="flex items-center justify-between p-2 rounded-lg bg-success/10 border border-success/20">
+                        <div>
+                          <span className="font-mono text-sm font-medium text-success">{appliedCoupon.code}</span>
+                          <p className="text-xs text-muted-foreground">{appliedCoupon.message}</p>
+                        </div>
+                        <Button variant="ghost" size="icon-sm" onClick={handleRemoveCoupon}>
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="flex gap-2">
+                        <Input
+                          placeholder="CODIGO"
+                          value={couponInput}
+                          onChange={(e) => setCouponInput(e.target.value.toUpperCase())}
+                          className={`flex-1 uppercase ${couponError ? "border-destructive" : ""}`}
+                        />
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          onClick={handleApplyCoupon}
+                          disabled={couponLoading || !couponInput.trim()}
+                        >
+                          {couponLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Aplicar"}
+                        </Button>
+                      </div>
+                    )}
+                    {couponError && (
+                      <p className="text-xs text-destructive">{couponError}</p>
+                    )}
+                  </div>
+
+                  <Separator />
+
                   {/* Totals */}
                   <div className="space-y-2">
                     <div className="flex justify-between text-sm">
@@ -508,26 +596,26 @@ const CheckoutPage = () => {
                     </div>
                     <div className="flex justify-between text-sm">
                       <span className="text-muted-foreground">Frete</span>
-                      <span className="text-success">Grátis</span>
+                      <span className={shippingCost === 0 ? "text-success" : ""}>
+                        {shippingCost === 0 ? "Grátis" : formatPrice(shippingCost)}
+                      </span>
                     </div>
-                    {paymentMethod === "pix" && step === "payment" && (
+                    {pixDiscount > 0 && (
                       <div className="flex justify-between text-sm">
-                        <span className="text-muted-foreground">Desconto PIX</span>
-                        <span className="text-success">
-                          -{formatPrice(totalPrice * 0.05)}
-                        </span>
+                        <span className="text-muted-foreground">Desconto PIX (5%)</span>
+                        <span className="text-success">-{formatPrice(pixDiscount)}</span>
+                      </div>
+                    )}
+                    {appliedCoupon && (
+                      <div className="flex justify-between text-sm">
+                        <span className="text-muted-foreground">Cupom ({appliedCoupon.code})</span>
+                        <span className="text-success">-{formatPrice(appliedCoupon.discount)}</span>
                       </div>
                     )}
                     <Separator />
                     <div className="flex justify-between font-semibold text-lg">
                       <span>Total</span>
-                      <span>
-                        {formatPrice(
-                          paymentMethod === "pix" && step === "payment"
-                            ? totalPrice * 0.95
-                            : totalPrice
-                        )}
-                      </span>
+                      <span>{formatPrice(finalTotal)}</span>
                     </div>
                   </div>
                 </CardContent>

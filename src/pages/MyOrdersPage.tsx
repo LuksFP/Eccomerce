@@ -2,6 +2,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { useOrders } from "@/context/OrdersContext";
 import { useFavorites } from "@/context/FavoritesContext";
+import { useProducts } from "@/context/ProductsContext";
 import { formatPrice } from "@/utils/formatPrice";
 import { orderStatusLabels, paymentMethodLabels } from "@/types/order";
 import { Header } from "@/components/Header";
@@ -35,9 +36,15 @@ const getStatusBadgeVariant = (status: string) => {
 
 const MyOrdersPage = () => {
   const navigate = useNavigate();
-  const { user, isAuthenticated, logout } = useAuth();
+  const { profile, isAuthenticated, logout } = useAuth();
   const { orders, cancelOrder } = useOrders();
   const { favorites, removeFavorite } = useFavorites();
+  const { products, getProductById } = useProducts();
+
+  // Get favorite products from IDs
+  const favoriteProducts = favorites
+    .map(id => getProductById(id))
+    .filter((p): p is NonNullable<typeof p> => p !== undefined);
 
   if (!isAuthenticated) {
     navigate("/auth", { replace: true });
@@ -65,8 +72,8 @@ const MyOrdersPage = () => {
                     <User className="h-6 w-6 text-primary" />
                   </div>
                   <div>
-                    <p className="font-medium">{user?.name}</p>
-                    <p className="text-sm text-muted-foreground">{user?.email}</p>
+                    <p className="font-medium">{profile?.name}</p>
+                    <p className="text-sm text-muted-foreground">{profile?.email}</p>
                   </div>
                 </div>
 
@@ -85,7 +92,7 @@ const MyOrdersPage = () => {
                       <Heart className="h-4 w-4 text-muted-foreground" />
                       <span className="text-sm">Favoritos</span>
                     </div>
-                    <span className="text-sm font-medium">{favorites.length}</span>
+                    <span className="text-sm font-medium">{favoriteProducts.length}</span>
                   </div>
                 </div>
 
@@ -198,7 +205,7 @@ const MyOrdersPage = () => {
               </TabsContent>
 
               <TabsContent value="favorites">
-                {favorites.length === 0 ? (
+                {favoriteProducts.length === 0 ? (
                   <Card>
                     <CardContent className="py-12 text-center">
                       <Heart className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
@@ -213,7 +220,7 @@ const MyOrdersPage = () => {
                   </Card>
                 ) : (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {favorites.map((product) => (
+                    {favoriteProducts.map((product) => (
                       <Card key={product.id}>
                         <CardContent className="p-4">
                           <div className="flex gap-4">

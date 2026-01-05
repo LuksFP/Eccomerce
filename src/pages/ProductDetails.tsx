@@ -90,15 +90,22 @@ const ProductDetails = () => {
     if (!product || isOutOfStock || !canAddMore) return;
     
     const qtyToAdd = Math.min(quantity, availableStock);
+    // Add item with correct type
+    const productForCart = {
+      ...product,
+      description: product.description || "",
+      rating: product.rating || 0,
+      originalPrice: product.originalPrice,
+    };
     for (let i = 0; i < qtyToAdd; i++) {
-      addItem(product);
+      addItem(productForCart);
     }
     setQuantity(1);
   };
 
   const handleToggleFavorite = () => {
     if (product && isAuthenticated) {
-      toggleFavorite(product);
+      toggleFavorite(product.id);
     }
   };
 

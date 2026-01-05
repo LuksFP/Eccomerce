@@ -1,165 +1,189 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
-import { User, AuthState, LoginCredentials, SignupData, UserRole } from "@/types/auth";
+import { User, Session } from "@supabase/supabase-js";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 
-type AuthContextType = AuthState & {
-  login: (credentials: LoginCredentials) => Promise<boolean>;
-  signup: (data: SignupData) => Promise<boolean>;
-  logout: () => void;
+type Profile = {
+  id: string;
+  user_id: string;
+  name: string;
+  email: string;
+  avatar_url: string | null;
+};
+
+type AuthContextType = {
+  user: User | null;
+  profile: Profile | null;
+  session: Session | null;
+  isAuthenticated: boolean;
+  isLoading: boolean;
   isAdmin: boolean;
+  login: (email: string, password: string) => Promise<boolean>;
+  signup: (email: string, password: string, name: string) => Promise<boolean>;
+  logout: () => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const AUTH_STORAGE_KEY = "ecommerce-auth";
-const USERS_STORAGE_KEY = "ecommerce-users";
-
-// Demo admin account
-const DEMO_ADMIN: User = {
-  id: "admin-001",
-  email: "admin@loja.com",
-  name: "Administrador",
-  role: "admin",
-  createdAt: new Date("2024-01-01"),
-};
-
-const DEMO_ADMIN_PASSWORD = "admin123";
-
-type StoredUser = User & { password: string };
-
-const getStoredUsers = (): StoredUser[] => {
-  try {
-    const stored = localStorage.getItem(USERS_STORAGE_KEY);
-    if (!stored) {
-      // Initialize with demo admin
-      const initial: StoredUser[] = [{ ...DEMO_ADMIN, password: DEMO_ADMIN_PASSWORD }];
-      localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(initial));
-      return initial;
-    }
-    return JSON.parse(stored);
-  } catch {
-    return [{ ...DEMO_ADMIN, password: DEMO_ADMIN_PASSWORD }];
-  }
-};
-
-const saveStoredUsers = (users: StoredUser[]) => {
-  localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(users));
-};
-
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [state, setState] = useState<AuthState>({
-    user: null,
-    isAuthenticated: false,
-    isLoading: true,
-  });
+  const [user, setUser] = useState<User | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
 
-  // Load auth state on mount
-  useEffect(() => {
-    try {
-      const stored = localStorage.getItem(AUTH_STORAGE_KEY);
-      if (stored) {
-        const user = JSON.parse(stored) as User;
-        setState({ user, isAuthenticated: true, isLoading: false });
-      } else {
-        setState((prev) => ({ ...prev, isLoading: false }));
-      }
-    } catch {
-      setState((prev) => ({ ...prev, isLoading: false }));
-    }
-  }, []);
-
-  const login = useCallback(async (credentials: LoginCredentials): Promise<boolean> => {
-    const { email, password } = credentials;
+  const fetchProfile = async (userId: string) => {
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("user_id", userId)
+      .maybeSingle();
     
-    // Simulate API delay
-    await new Promise((resolve) => setTimeout(resolve, 800));
+    if (!error && data) {
+      setProfile(data);
+    }
+  };
 
-    const users = getStoredUsers();
-    const foundUser = users.find(
-      (u) => u.email.toLowerCase() === email.toLowerCase() && u.password === password
+  const checkAdminRole = async (userId: string) => {
+    const { data, error } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", userId)
+      .eq("role", "admin")
+      .maybeSingle();
+    
+    setIsAdmin(!error && !!data);
+  };
+
+  useEffect(() => {
+    // Set up auth state listener FIRST
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        setSession(session);
+        setUser(session?.user ?? null);
+        
+        if (session?.user) {
+          // Defer Supabase calls with setTimeout
+          setTimeout(() => {
+            fetchProfile(session.user.id);
+            checkAdminRole(session.user.id);
+          }, 0);
+        } else {
+          setProfile(null);
+          setIsAdmin(false);
+        }
+        
+        setIsLoading(false);
+      }
     );
 
-    if (!foundUser) {
+    // THEN check for existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setUser(session?.user ?? null);
+      
+      if (session?.user) {
+        fetchProfile(session.user.id);
+        checkAdminRole(session.user.id);
+      }
+      
+      setIsLoading(false);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const login = useCallback(async (email: string, password: string): Promise<boolean> => {
+    setIsLoading(true);
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) {
+        toast({
+          title: "Erro no login",
+          description: error.message === "Invalid login credentials" 
+            ? "Email ou senha incorretos" 
+            : error.message,
+          variant: "destructive",
+        });
+        return false;
+      }
+
+      toast({ title: "Login realizado com sucesso!" });
+      return true;
+    } catch {
       toast({
         title: "Erro no login",
-        description: "Email ou senha incorretos.",
+        description: "Ocorreu um erro inesperado",
         variant: "destructive",
       });
       return false;
+    } finally {
+      setIsLoading(false);
     }
-
-    const { password: _, ...user } = foundUser;
-    localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(user));
-    setState({ user, isAuthenticated: true, isLoading: false });
-
-    toast({
-      title: "Bem-vindo!",
-      description: `Olá, ${user.name}!`,
-    });
-
-    return true;
   }, []);
 
-  const signup = useCallback(async (data: SignupData): Promise<boolean> => {
-    const { email, password, name } = data;
+  const signup = useCallback(async (email: string, password: string, name: string): Promise<boolean> => {
+    setIsLoading(true);
+    try {
+      const redirectUrl = `${window.location.origin}/`;
+      
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: redirectUrl,
+          data: { name },
+        },
+      });
 
-    // Simulate API delay
-    await new Promise((resolve) => setTimeout(resolve, 800));
+      if (error) {
+        toast({
+          title: "Erro no cadastro",
+          description: error.message === "User already registered"
+            ? "Este email já está cadastrado"
+            : error.message,
+          variant: "destructive",
+        });
+        return false;
+      }
 
-    const users = getStoredUsers();
-    
-    if (users.find((u) => u.email.toLowerCase() === email.toLowerCase())) {
+      toast({ title: "Conta criada com sucesso!" });
+      return true;
+    } catch {
       toast({
         title: "Erro no cadastro",
-        description: "Este email já está em uso.",
+        description: "Ocorreu um erro inesperado",
         variant: "destructive",
       });
       return false;
+    } finally {
+      setIsLoading(false);
     }
-
-    const newUser: StoredUser = {
-      id: `user-${Date.now()}`,
-      email,
-      name,
-      role: "user" as UserRole,
-      createdAt: new Date(),
-      password,
-    };
-
-    users.push(newUser);
-    saveStoredUsers(users);
-
-    const { password: _, ...user } = newUser;
-    localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(user));
-    setState({ user, isAuthenticated: true, isLoading: false });
-
-    toast({
-      title: "Conta criada!",
-      description: "Bem-vindo à nossa loja!",
-    });
-
-    return true;
   }, []);
 
-  const logout = useCallback(() => {
-    localStorage.removeItem(AUTH_STORAGE_KEY);
-    setState({ user: null, isAuthenticated: false, isLoading: false });
-    toast({
-      title: "Até logo!",
-      description: "Você foi desconectado.",
-    });
+  const logout = useCallback(async () => {
+    await supabase.auth.signOut();
+    setProfile(null);
+    setIsAdmin(false);
+    toast({ title: "Logout realizado com sucesso!" });
   }, []);
-
-  const isAdmin = state.user?.role === "admin";
 
   return (
     <AuthContext.Provider
       value={{
-        ...state,
+        user,
+        profile,
+        session,
+        isAuthenticated: !!session,
+        isLoading,
+        isAdmin,
         login,
         signup,
         logout,
-        isAdmin,
       }}
     >
       {children}
