@@ -1,4 +1,3 @@
-import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -8,7 +7,8 @@ import {
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { ProductCategory, SortOption, FilterState, categoryLabels } from "@/types/product";
-import { Search, X, SlidersHorizontal } from "lucide-react";
+import { X, SlidersHorizontal } from "lucide-react";
+import { SearchAutocomplete } from "./SearchAutocomplete";
 
 type FiltersProps = {
   filters: FilterState;
@@ -30,25 +30,11 @@ export const Filters = ({ filters, onFilterChange, resultsCount }: FiltersProps)
 
   return (
     <div className="space-y-4">
-      {/* Search */}
-      <div className="relative">
-        <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-        <Input
-          type="text"
-          placeholder="Buscar produtos..."
-          value={filters.search}
-          onChange={(e) => onFilterChange({ search: e.target.value })}
-          className="pl-11 pr-11 h-12 glass border-border/30 rounded-xl focus:border-primary/50 transition-colors"
-        />
-        {filters.search && (
-          <button
-            onClick={() => onFilterChange({ search: "" })}
-            className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-          >
-            <X className="h-4 w-4" />
-          </button>
-        )}
-      </div>
+      {/* Search with Autocomplete */}
+      <SearchAutocomplete
+        value={filters.search}
+        onChange={(value) => onFilterChange({ search: value })}
+      />
 
       {/* Filter row */}
       <div className="flex flex-col sm:flex-row flex-wrap gap-3 items-start sm:items-center">
