@@ -10,6 +10,7 @@ import { ProductsProvider } from "@/context/ProductsContext";
 import { OrdersProvider } from "@/context/OrdersContext";
 import { ReviewsProvider } from "@/context/ReviewsContext";
 import { NotificationsProvider } from "@/context/NotificationsContext";
+import { ChatbotWidget } from "@/components/Chatbot";
 import Home from "./pages/Home";
 import ProductDetails from "./pages/ProductDetails";
 import AuthPage from "./pages/AuthPage";
@@ -17,6 +18,9 @@ import CheckoutPage from "./pages/CheckoutPage";
 import MyOrdersPage from "./pages/MyOrdersPage";
 import AdminPage from "./pages/AdminPage";
 import ProfilePage from "./pages/ProfilePage";
+import WishlistPage from "./pages/WishlistPage";
+import OrderTrackingPage from "./pages/OrderTrackingPage";
+import FAQPage from "./pages/FAQPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -40,10 +44,15 @@ const App = () => (
                         <Route path="/auth" element={<AuthPage />} />
                         <Route path="/checkout" element={<CheckoutPage />} />
                         <Route path="/meus-pedidos" element={<MyOrdersPage />} />
+                        <Route path="/pedido/:orderId" element={<OrderTrackingPage />} />
                         <Route path="/perfil" element={<ProfilePage />} />
+                        <Route path="/wishlist" element={<WishlistPage />} />
+                        <Route path="/wishlist/:shareCode" element={<WishlistPage />} />
+                        <Route path="/faq" element={<FAQPage />} />
                         <Route path="/admin" element={<AdminPage />} />
                         <Route path="*" element={<NotFound />} />
                       </Routes>
+                      <ChatbotWidget />
                     </BrowserRouter>
                   </NotificationsProvider>
                 </ReviewsProvider>

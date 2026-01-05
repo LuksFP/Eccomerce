@@ -214,6 +214,7 @@ export type Database = {
           created_at: string
           helpful: number
           id: string
+          images: string[] | null
           product_id: string
           rating: number
           title: string
@@ -225,6 +226,7 @@ export type Database = {
           created_at?: string
           helpful?: number
           id?: string
+          images?: string[] | null
           product_id: string
           rating: number
           title: string
@@ -236,6 +238,7 @@ export type Database = {
           created_at?: string
           helpful?: number
           id?: string
+          images?: string[] | null
           product_id?: string
           rating?: number
           title?: string
@@ -251,6 +254,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      shared_wishlists: {
+        Row: {
+          created_at: string
+          id: string
+          is_public: boolean
+          name: string
+          share_code: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_public?: boolean
+          name?: string
+          share_code: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_public?: boolean
+          name?: string
+          share_code?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       user_roles: {
         Row: {
@@ -272,6 +305,42 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      wishlist_items: {
+        Row: {
+          added_at: string
+          id: string
+          product_id: string
+          wishlist_id: string
+        }
+        Insert: {
+          added_at?: string
+          id?: string
+          product_id: string
+          wishlist_id: string
+        }
+        Update: {
+          added_at?: string
+          id?: string
+          product_id?: string
+          wishlist_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wishlist_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "wishlist_items_wishlist_id_fkey"
+            columns: ["wishlist_id"]
+            isOneToOne: false
+            referencedRelation: "shared_wishlists"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
