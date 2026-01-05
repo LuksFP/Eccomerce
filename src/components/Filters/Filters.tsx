@@ -51,47 +51,50 @@ export const Filters = ({ filters, onFilterChange, resultsCount }: FiltersProps)
       </div>
 
       {/* Filter row */}
-      <div className="flex flex-wrap gap-3 items-center">
+      <div className="flex flex-col sm:flex-row flex-wrap gap-3 items-start sm:items-center">
         <div className="flex items-center gap-2 text-muted-foreground">
           <SlidersHorizontal className="h-4 w-4" />
           <span className="text-sm font-medium">Filtros:</span>
         </div>
 
-        {/* Category */}
-        <Select
-          value={filters.category}
-          onValueChange={(value) =>
-            onFilterChange({ category: value as ProductCategory | "all" })
-          }
-        >
-          <SelectTrigger className="w-[160px] h-9 bg-card border-border/50">
-            <SelectValue placeholder="Categoria" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Todas categorias</SelectItem>
-            {(Object.keys(categoryLabels) as ProductCategory[]).map((cat) => (
-              <SelectItem key={cat} value={cat}>
-                {categoryLabels[cat]}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        {/* Filters container - full width on mobile */}
+        <div className="flex flex-wrap gap-2 w-full sm:w-auto">
+          {/* Category */}
+          <Select
+            value={filters.category}
+            onValueChange={(value) =>
+              onFilterChange({ category: value as ProductCategory | "all" })
+            }
+          >
+            <SelectTrigger className="w-full sm:w-[160px] h-9 bg-card border-border/50">
+              <SelectValue placeholder="Categoria" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todas categorias</SelectItem>
+              {(Object.keys(categoryLabels) as ProductCategory[]).map((cat) => (
+                <SelectItem key={cat} value={cat}>
+                  {categoryLabels[cat]}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
 
-        {/* Sort */}
-        <Select
-          value={filters.sortBy}
-          onValueChange={(value) => onFilterChange({ sortBy: value as SortOption })}
-        >
-          <SelectTrigger className="w-[180px] h-9 bg-card border-border/50">
-            <SelectValue placeholder="Ordenar por" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="price-asc">Menor preço</SelectItem>
-            <SelectItem value="price-desc">Maior preço</SelectItem>
-            <SelectItem value="name-asc">Nome A-Z</SelectItem>
-            <SelectItem value="name-desc">Nome Z-A</SelectItem>
-          </SelectContent>
-        </Select>
+          {/* Sort */}
+          <Select
+            value={filters.sortBy}
+            onValueChange={(value) => onFilterChange({ sortBy: value as SortOption })}
+          >
+            <SelectTrigger className="w-full sm:w-[180px] h-9 bg-card border-border/50">
+              <SelectValue placeholder="Ordenar por" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="price-asc">Menor preço</SelectItem>
+              <SelectItem value="price-desc">Maior preço</SelectItem>
+              <SelectItem value="name-asc">Nome A-Z</SelectItem>
+              <SelectItem value="name-desc">Nome Z-A</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
 
         {/* Clear filters */}
         {hasActiveFilters && (
@@ -107,7 +110,7 @@ export const Filters = ({ filters, onFilterChange, resultsCount }: FiltersProps)
         )}
 
         {/* Results count */}
-        <div className="ml-auto text-sm text-muted-foreground">
+        <div className="sm:ml-auto text-sm text-muted-foreground order-first sm:order-last w-full sm:w-auto text-right">
           {resultsCount} {resultsCount === 1 ? "produto" : "produtos"}
         </div>
       </div>

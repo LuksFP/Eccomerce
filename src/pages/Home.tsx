@@ -82,32 +82,32 @@ const Home = () => {
       <Header />
       <Cart />
 
-      <main className="container py-8">
+      <main className="container px-3 sm:px-4 md:px-6 py-4 sm:py-6 md:py-8">
         {/* Hero Section */}
-        <section className="mb-10">
-          <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary/10 via-accent to-secondary p-8 md:p-12">
+        <section className="mb-6 sm:mb-8 md:mb-10">
+          <div className="relative overflow-hidden rounded-xl sm:rounded-2xl bg-gradient-to-br from-primary/10 via-accent to-secondary p-4 sm:p-6 md:p-8 lg:p-12">
             <div className="relative z-10">
-              <div className="flex items-center gap-2 mb-3">
-                <Sparkles className="h-5 w-5 text-primary" />
-                <span className="text-sm font-medium text-primary">Nova Coleção</span>
+              <div className="flex items-center gap-2 mb-2 sm:mb-3">
+                <Sparkles className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+                <span className="text-xs sm:text-sm font-medium text-primary">Nova Coleção</span>
               </div>
-              <h1 className="font-display text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-3">
+              <h1 className="font-display text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-2 sm:mb-3">
                 Descubra Produtos<br />
                 <span className="text-primary">Exclusivos</span>
               </h1>
-              <p className="text-muted-foreground max-w-lg">
+              <p className="text-sm sm:text-base text-muted-foreground max-w-lg">
                 Explore nossa seleção curada de eletrônicos, moda e acessórios 
                 com os melhores preços e qualidade garantida.
               </p>
             </div>
             {/* Decorative elements */}
-            <div className="absolute -top-20 -right-20 w-64 h-64 bg-primary/5 rounded-full blur-3xl" />
-            <div className="absolute -bottom-20 -left-20 w-64 h-64 bg-primary/5 rounded-full blur-3xl" />
+            <div className="absolute -top-20 -right-20 w-40 sm:w-64 h-40 sm:h-64 bg-primary/5 rounded-full blur-3xl" />
+            <div className="absolute -bottom-20 -left-20 w-40 sm:w-64 h-40 sm:h-64 bg-primary/5 rounded-full blur-3xl" />
           </div>
         </section>
 
         {/* Filters */}
-        <section className="mb-8">
+        <section className="mb-4 sm:mb-6 md:mb-8">
           <Filters
             filters={filters}
             onFilterChange={handleFilterChange}
