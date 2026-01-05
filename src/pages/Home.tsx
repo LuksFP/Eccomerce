@@ -130,7 +130,7 @@ const Home = () => {
               </p>
             </div>
             <p className="text-sm text-muted-foreground">
-              © 2024 LojaElegante. Todos os direitos reservados.
+              © 2026 LojaElegante. Todos os direitos reservados.
             </p>
           </div>
         </div>
