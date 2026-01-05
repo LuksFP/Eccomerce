@@ -11,13 +11,26 @@ import { Bell, BellRing, Package, Tag, Info, Check, Trash2, X } from "lucide-rea
 import { cn } from "@/lib/utils";
 
 const getNotificationIcon = (type: NotificationType) => {
+  const iconClasses = "h-4 w-4";
   switch (type) {
     case "promotion":
-      return <Tag className="h-4 w-4 text-primary" />;
+      return (
+        <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+          <Tag className={cn(iconClasses, "text-primary")} />
+        </div>
+      );
     case "order":
-      return <Package className="h-4 w-4 text-success" />;
+      return (
+        <div className="w-8 h-8 rounded-lg bg-success/10 flex items-center justify-center">
+          <Package className={cn(iconClasses, "text-success")} />
+        </div>
+      );
     case "system":
-      return <Info className="h-4 w-4 text-muted-foreground" />;
+      return (
+        <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center">
+          <Info className={cn(iconClasses, "text-muted-foreground")} />
+        </div>
+      );
   }
 };
 
@@ -60,7 +73,7 @@ export const NotificationsPopover = () => {
         <Button
           variant="ghost"
           size="icon"
-          className="relative"
+          className="relative hover-glow"
           aria-label="Notificações"
         >
           {unreadCount > 0 ? (
@@ -69,15 +82,15 @@ export const NotificationsPopover = () => {
             <Bell className="h-5 w-5" />
           )}
           {unreadCount > 0 && (
-            <span className="absolute -top-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-destructive text-[10px] font-bold text-destructive-foreground">
+            <span className="absolute -top-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-destructive text-[10px] font-bold text-destructive-foreground animate-pulse">
               {unreadCount > 9 ? "9+" : unreadCount}
             </span>
           )}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-80 sm:w-96 p-0" align="end">
-        <div className="flex items-center justify-between p-4 border-b border-border">
-          <h3 className="font-semibold">Notificações</h3>
+      <PopoverContent className="w-80 sm:w-96 p-0 glass border-border/30" align="end">
+        <div className="flex items-center justify-between p-4 border-b border-border/30">
+          <h3 className="font-display font-bold">Notificações</h3>
           {notifications.length > 0 && (
             <div className="flex gap-1">
               {unreadCount > 0 && (
@@ -94,7 +107,7 @@ export const NotificationsPopover = () => {
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-7 text-xs text-muted-foreground"
+                className="h-7 text-xs text-muted-foreground hover:text-destructive"
                 onClick={clearAll}
               >
                 <Trash2 className="h-3 w-3" />
@@ -104,20 +117,22 @@ export const NotificationsPopover = () => {
         </div>
 
         {notifications.length === 0 ? (
-          <div className="p-8 text-center">
-            <Bell className="h-10 w-10 mx-auto text-muted-foreground/50 mb-3" />
+          <div className="p-10 text-center">
+            <div className="w-16 h-16 rounded-2xl bg-secondary mx-auto flex items-center justify-center mb-4">
+              <Bell className="h-8 w-8 text-muted-foreground" />
+            </div>
             <p className="text-sm text-muted-foreground">
               Nenhuma notificação ainda
             </p>
           </div>
         ) : (
           <ScrollArea className="max-h-[400px]">
-            <div className="divide-y divide-border">
+            <div className="divide-y divide-border/30">
               {notifications.map((notification) => (
                 <div
                   key={notification.id}
                   className={cn(
-                    "p-4 cursor-pointer transition-colors hover:bg-muted/50 relative group",
+                    "p-4 cursor-pointer transition-colors hover:bg-secondary/50 relative group",
                     !notification.read && "bg-primary/5"
                   )}
                   onClick={() =>
@@ -125,7 +140,7 @@ export const NotificationsPopover = () => {
                   }
                 >
                   <div className="flex gap-3">
-                    <div className="flex-shrink-0 mt-0.5">
+                    <div className="flex-shrink-0">
                       {getNotificationIcon(notification.type)}
                     </div>
                     <div className="flex-1 min-w-0">
@@ -151,7 +166,7 @@ export const NotificationsPopover = () => {
                   
                   {/* Delete button */}
                   <button
-                    className="absolute top-2 right-2 p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-muted"
+                    className="absolute top-2 right-2 p-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity hover:bg-muted"
                     onClick={(e) => {
                       e.stopPropagation();
                       deleteNotification(notification.id);
@@ -162,7 +177,7 @@ export const NotificationsPopover = () => {
 
                   {/* Unread indicator */}
                   {!notification.read && (
-                    <div className="absolute left-1 top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-primary" />
+                    <div className="absolute left-1.5 top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-primary" />
                   )}
                 </div>
               ))}
