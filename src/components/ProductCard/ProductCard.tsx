@@ -7,7 +7,7 @@ import { useCart } from "@/context/CartContext";
 import { useFavorites } from "@/context/FavoritesContext";
 import { useAuth } from "@/context/AuthContext";
 import { useReviews } from "@/context/ReviewsContext";
-import { ShoppingCart, Star, Heart } from "lucide-react";
+import { ShoppingCart, Star, Heart, Eye } from "lucide-react";
 
 type ProductCardProps = {
   product: Product;
@@ -45,14 +45,19 @@ export const ProductCard = ({ product }: ProductCardProps) => {
     }
   };
 
+  const rating = reviewStats.totalReviews > 0 
+    ? reviewStats.averageRating 
+    : product.rating || 0;
+  const reviewCount = reviewStats.totalReviews || 0;
+
   return (
     <Link
       to={`/produto/${product.id}`}
       className="group block product-card-hover"
     >
-      <article className="bg-card rounded-xl overflow-hidden border border-border/50 shadow-sm h-full flex flex-col">
+      <article className="glass rounded-2xl overflow-hidden border border-border/30 h-full flex flex-col">
         {/* Image Container */}
-        <div className="relative aspect-square overflow-hidden bg-muted">
+        <div className="relative aspect-[4/5] overflow-hidden bg-secondary/50">
           <img
             src={product.image}
             alt={product.name}
@@ -60,15 +65,18 @@ export const ProductCard = ({ product }: ProductCardProps) => {
             loading="lazy"
           />
           
-          {/* Badges overlay */}
+          {/* Gradient overlay */}
+          <div className="absolute inset-0 bg-gradient-to-t from-background/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+          
+          {/* Top badges */}
           <div className="absolute top-3 left-3 flex flex-col gap-2">
             {isOutOfStock && (
-              <Badge variant="out-of-stock" className="text-xs">
-                Sem Estoque
+              <Badge variant="out-of-stock" className="text-xs backdrop-blur-sm">
+                Esgotado
               </Badge>
             )}
             {discount > 0 && !isOutOfStock && (
-              <Badge variant="destructive" className="text-xs">
+              <Badge variant="destructive" className="text-xs font-bold">
                 -{discount}%
               </Badge>
             )}
@@ -76,67 +84,84 @@ export const ProductCard = ({ product }: ProductCardProps) => {
 
           {/* Category badge */}
           <div className="absolute top-3 right-3">
-            <Badge variant={categoryBadgeVariant[product.category]} className="text-xs">
+            <Badge 
+              variant={categoryBadgeVariant[product.category]} 
+              className="text-xs backdrop-blur-sm"
+            >
               {categoryLabels[product.category]}
             </Badge>
           </div>
 
-          {/* Favorite button */}
-          {isAuthenticated && (
-            <button
-              onClick={handleToggleFavorite}
-              className={`absolute bottom-3 right-3 w-9 h-9 rounded-full flex items-center justify-center transition-all duration-200 ${
-                isFav
-                  ? "bg-destructive text-destructive-foreground"
-                  : "bg-card/90 backdrop-blur-sm text-muted-foreground hover:text-destructive"
-              } shadow-lg`}
-              aria-label={isFav ? "Remover dos favoritos" : "Adicionar aos favoritos"}
-            >
-              <Heart className={`h-4 w-4 ${isFav ? "fill-current" : ""}`} />
-            </button>
-          )}
+          {/* Action buttons overlay */}
+          <div className="absolute bottom-0 left-0 right-0 p-3 flex justify-between items-end opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 transition-all duration-300">
+            {/* Quick view */}
+            <div className="w-10 h-10 rounded-xl bg-card/90 backdrop-blur-sm flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-card transition-colors cursor-pointer">
+              <Eye className="h-4 w-4" />
+            </div>
+
+            {/* Favorite */}
+            {isAuthenticated && (
+              <button
+                onClick={handleToggleFavorite}
+                className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-200 backdrop-blur-sm ${
+                  isFav
+                    ? "bg-destructive text-destructive-foreground"
+                    : "bg-card/90 text-muted-foreground hover:text-destructive hover:bg-card"
+                }`}
+                aria-label={isFav ? "Remover dos favoritos" : "Adicionar aos favoritos"}
+              >
+                <Heart className={`h-4 w-4 ${isFav ? "fill-current" : ""}`} />
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Content */}
-        <div className="p-3 sm:p-4 flex flex-col flex-1">
+        <div className="p-4 flex flex-col flex-1">
           {/* Rating */}
-          {reviewStats.totalReviews > 0 ? (
-            <div className="flex items-center gap-1 mb-1 sm:mb-2">
-              <Star className="h-3 w-3 sm:h-3.5 sm:w-3.5 fill-warning text-warning" />
-              <span className="text-[10px] sm:text-xs font-medium text-muted-foreground">
-                {reviewStats.averageRating.toFixed(1)} ({reviewStats.totalReviews})
+          {rating > 0 && (
+            <div className="flex items-center gap-1.5 mb-2">
+              <div className="flex items-center gap-0.5">
+                {[...Array(5)].map((_, i) => (
+                  <Star
+                    key={i}
+                    className={`h-3 w-3 ${
+                      i < Math.floor(rating)
+                        ? "fill-warning text-warning"
+                        : "fill-muted text-muted"
+                    }`}
+                  />
+                ))}
+              </div>
+              <span className="text-xs text-muted-foreground">
+                {rating.toFixed(1)}
+                {reviewCount > 0 && ` (${reviewCount})`}
               </span>
             </div>
-          ) : product.rating ? (
-            <div className="flex items-center gap-1 mb-1 sm:mb-2">
-              <Star className="h-3 w-3 sm:h-3.5 sm:w-3.5 fill-warning text-warning" />
-              <span className="text-[10px] sm:text-xs font-medium text-muted-foreground">
-                {product.rating.toFixed(1)}
-              </span>
-            </div>
-          ) : null}
+          )}
 
           {/* Name */}
-          <h3 className="font-medium text-xs sm:text-sm md:text-base text-card-foreground group-hover:text-primary transition-colors line-clamp-2 mb-1 sm:mb-2">
+          <h3 className="font-medium text-sm sm:text-base text-card-foreground group-hover:text-primary transition-colors line-clamp-2 mb-2 flex-1">
             {product.name}
           </h3>
 
           {/* Price */}
-          <div className="flex flex-col sm:flex-row sm:items-center gap-0.5 sm:gap-2 mt-auto mb-2 sm:mb-3">
-            <span className="text-sm sm:text-base md:text-lg font-bold text-card-foreground">
+          <div className="flex items-baseline gap-2 mb-3">
+            <span className="text-lg sm:text-xl font-bold text-gradient">
               {formatPrice(product.price)}
             </span>
             {product.originalPrice && (
-              <span className="text-[10px] sm:text-xs md:text-sm text-muted-foreground line-through">
+              <span className="text-xs sm:text-sm text-muted-foreground line-through">
                 {formatPrice(product.originalPrice)}
               </span>
             )}
           </div>
 
-          {/* Stock info */}
+          {/* Stock warning */}
           {!isOutOfStock && product.stock <= 5 && (
-            <p className="text-[10px] sm:text-xs text-warning mb-2 sm:mb-3">
-              Apenas {product.stock} em estoque
+            <p className="text-xs text-warning mb-3 flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-warning animate-pulse" />
+              Apenas {product.stock} restantes
             </p>
           )}
 
@@ -144,21 +169,16 @@ export const ProductCard = ({ product }: ProductCardProps) => {
           <Button
             variant={isOutOfStock ? "secondary" : "cart"}
             size="sm"
-            className="w-full text-xs sm:text-sm h-8 sm:h-9"
+            className="w-full font-medium"
             onClick={handleAddToCart}
             disabled={isOutOfStock || !canAddMore}
           >
-            <ShoppingCart className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-            <span className="hidden xs:inline">
-              {isOutOfStock
-                ? "Indisponível"
-                : !canAddMore
-                ? "Máximo"
-                : "Adicionar"}
-            </span>
-            <span className="xs:hidden">
-              {isOutOfStock ? "—" : "+"}
-            </span>
+            <ShoppingCart className="h-4 w-4" />
+            {isOutOfStock
+              ? "Esgotado"
+              : !canAddMore
+              ? "Máximo atingido"
+              : "Adicionar ao Carrinho"}
           </Button>
         </div>
       </article>
