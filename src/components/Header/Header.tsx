@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { CartTrigger } from "@/components/Cart";
 import { NotificationsPopover } from "@/components/Notifications";
+import { ThemeToggle } from "@/components/shared";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -18,7 +19,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { ShoppingBag, User, LogOut, Package, Heart, Shield, Menu, ChevronRight } from "lucide-react";
+import { ShoppingBag, User, LogOut, Package, Heart, Shield, Menu, ChevronRight, UserCircle } from "lucide-react";
 
 export const Header = () => {
   const { isAuthenticated, isAdmin, profile, logout } = useAuth();
@@ -152,6 +153,7 @@ export const Header = () => {
 
         {/* Actions */}
         <div className="flex items-center gap-2">
+          <ThemeToggle />
           {isAuthenticated && <NotificationsPopover />}
           <CartTrigger />
 
@@ -171,6 +173,12 @@ export const Header = () => {
                   <p className="text-xs text-muted-foreground">{profile?.email}</p>
                 </div>
                 <DropdownMenuSeparator className="bg-border/30" />
+                <DropdownMenuItem asChild>
+                  <Link to="/perfil" className="cursor-pointer">
+                    <UserCircle className="h-4 w-4 mr-2" />
+                    Meu Perfil
+                  </Link>
+                </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                   <Link to="/meus-pedidos" className="cursor-pointer">
                     <Package className="h-4 w-4 mr-2" />
