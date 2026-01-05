@@ -6,6 +6,7 @@ export type Review = {
   rating: number; // 1-5
   title: string;
   comment: string;
+  images?: string[]; // Array of image URLs
   createdAt: Date;
   helpful: number;
 };

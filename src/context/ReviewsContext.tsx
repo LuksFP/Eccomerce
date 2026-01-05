@@ -6,7 +6,7 @@ import { toast } from "@/hooks/use-toast";
 type ReviewsContextType = {
   getProductReviews: (productId: string) => Review[];
   getProductStats: (productId: string) => ReviewStats;
-  addReview: (productId: string, rating: number, title: string, comment: string) => boolean;
+  addReview: (productId: string, rating: number, title: string, comment: string, images?: string[]) => boolean;
   deleteReview: (reviewId: string) => void;
   markHelpful: (reviewId: string) => void;
   hasUserReviewed: (productId: string) => boolean;
@@ -26,7 +26,7 @@ const initialReviews: Review[] = [
     rating: 5,
     title: "Excelente produto!",
     comment: "O MacBook Pro superou todas as minhas expectativas. Performance incrível e a tela é simplesmente maravilhosa. Recomendo muito!",
-    createdAt: new Date("2024-12-15"),
+    createdAt: new Date("2026-01-02"),
     helpful: 12,
   },
   {
@@ -37,7 +37,7 @@ const initialReviews: Review[] = [
     rating: 4,
     title: "Muito bom, mas caro",
     comment: "Produto de altíssima qualidade, porém o preço é um pouco salgado. Bateria dura o dia todo sem problemas.",
-    createdAt: new Date("2024-12-10"),
+    createdAt: new Date("2025-12-28"),
     helpful: 8,
   },
   {
@@ -48,7 +48,7 @@ const initialReviews: Review[] = [
     rating: 5,
     title: "Melhor iPhone que já tive",
     comment: "A câmera é espetacular! Fotos profissionais sem esforço. O Dynamic Island é muito útil no dia a dia.",
-    createdAt: new Date("2024-12-20"),
+    createdAt: new Date("2026-01-03"),
     helpful: 5,
   },
   {
@@ -59,7 +59,7 @@ const initialReviews: Review[] = [
     rating: 5,
     title: "Qualidade premium",
     comment: "O couro é de excelente qualidade e o acabamento impecável. Vale cada centavo investido.",
-    createdAt: new Date("2024-12-18"),
+    createdAt: new Date("2025-12-30"),
     helpful: 3,
   },
   {
@@ -70,7 +70,7 @@ const initialReviews: Review[] = [
     rating: 4,
     title: "Lindo e elegante",
     comment: "Relógio muito bonito, combina com qualquer ocasião. Só achei um pouco pesado no início, mas acostumei rápido.",
-    createdAt: new Date("2024-12-05"),
+    createdAt: new Date("2025-12-20"),
     helpful: 7,
   },
   {
@@ -81,7 +81,7 @@ const initialReviews: Review[] = [
     rating: 5,
     title: "Som incrível!",
     comment: "O cancelamento de ruído é absurdo! Perfeito para trabalhar focado. A bateria dura bastante também.",
-    createdAt: new Date("2024-12-22"),
+    createdAt: new Date("2026-01-04"),
     helpful: 15,
   },
 ];
@@ -164,7 +164,7 @@ export const ReviewsProvider: React.FC<{ children: React.ReactNode }> = ({ child
   );
 
   const addReview = useCallback(
-    (productId: string, rating: number, title: string, comment: string): boolean => {
+    (productId: string, rating: number, title: string, comment: string, images?: string[]): boolean => {
       if (!user) {
         toast({
           title: "Faça login",
@@ -191,6 +191,7 @@ export const ReviewsProvider: React.FC<{ children: React.ReactNode }> = ({ child
         rating,
         title,
         comment,
+        images: images || [],
         createdAt: new Date(),
         helpful: 0,
       };
@@ -202,7 +203,7 @@ export const ReviewsProvider: React.FC<{ children: React.ReactNode }> = ({ child
       });
       return true;
     },
-    [user, hasUserReviewed]
+    [user, hasUserReviewed, profile]
   );
 
   const deleteReview = useCallback(
