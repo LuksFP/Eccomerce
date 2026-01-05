@@ -3,6 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import { FilterState, ProductCategory, SortOption } from "@/types/product";
 import { useProducts } from "@/context/ProductsContext";
 import { useDebounce } from "@/hooks/useDebounce";
+import { useOrderNotifications } from "@/hooks/useOrderNotifications";
 import { Header } from "@/components/Header";
 import { Filters } from "@/components/Filters";
 import { ProductList } from "@/components/ProductList";
@@ -12,6 +13,9 @@ import { Sparkles } from "lucide-react";
 const Home = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const { products } = useProducts();
+  
+  // Enable order status notifications
+  useOrderNotifications();
   const [isLoading, setIsLoading] = useState(true);
   const [filters, setFilters] = useState<FilterState>({
     search: searchParams.get("search") || "",

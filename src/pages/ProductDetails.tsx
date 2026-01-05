@@ -7,9 +7,11 @@ import { formatPrice, calculateDiscount } from "@/utils/formatPrice";
 import { useCart } from "@/context/CartContext";
 import { useFavorites } from "@/context/FavoritesContext";
 import { useAuth } from "@/context/AuthContext";
+import { useNotifications } from "@/context/NotificationsContext";
 import { Header } from "@/components/Header";
 import { Cart } from "@/components/Cart";
 import { ReviewForm, ReviewsList } from "@/components/Reviews";
+import { ImageGallery } from "@/components/ProductDetails";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
@@ -25,7 +27,9 @@ import {
   Plus,
   Heart,
   MessageSquare,
+  Share2,
 } from "lucide-react";
+import { toast } from "sonner";
 
 const ProductSkeleton = () => (
   <div className="container py-8">
@@ -68,6 +72,7 @@ const ProductDetails = () => {
   const { addItem, getItemQuantity } = useCart();
   const { isFavorite, toggleFavorite } = useFavorites();
   const { isAuthenticated } = useAuth();
+  const { addNotification } = useNotifications();
   
   const [isLoading, setIsLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
@@ -90,7 +95,6 @@ const ProductDetails = () => {
     if (!product || isOutOfStock || !canAddMore) return;
     
     const qtyToAdd = Math.min(quantity, availableStock);
-    // Add item with correct type
     const productForCart = {
       ...product,
       description: product.description || "",
@@ -101,6 +105,27 @@ const ProductDetails = () => {
       addItem(productForCart);
     }
     setQuantity(1);
+    
+    // Notify user
+    toast.success(`${product.name} adicionado ao carrinho!`);
+  };
+
+  const handleShare = async () => {
+    const url = window.location.href;
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: product?.name,
+          text: product?.description || "",
+          url,
+        });
+      } catch {
+        // User cancelled
+      }
+    } else {
+      await navigator.clipboard.writeText(url);
+      toast.success("Link copiado para a área de transferência!");
+    }
   };
 
   const handleToggleFavorite = () => {
@@ -137,9 +162,9 @@ const ProductDetails = () => {
       <Header />
       <Cart />
 
-      <main className="container py-8">
+      <main className="container px-3 sm:px-4 md:px-6 py-4 sm:py-6 md:py-8">
         {/* Breadcrumb */}
-        <nav className="mb-8">
+        <nav className="mb-4 sm:mb-6 md:mb-8 flex items-center justify-between">
           <Button
             variant="ghost"
             size="sm"
@@ -149,21 +174,23 @@ const ProductDetails = () => {
             <ChevronLeft className="h-4 w-4 mr-1" />
             Voltar
           </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleShare}
+            className="text-muted-foreground hover:text-foreground"
+          >
+            <Share2 className="h-4 w-4" />
+          </Button>
         </nav>
 
-        <div className="grid md:grid-cols-2 gap-8 lg:gap-12">
-          {/* Image */}
+        <div className="grid md:grid-cols-2 gap-6 md:gap-8 lg:gap-12">
+          {/* Image Gallery */}
           <div className="relative">
-            <div className="aspect-square rounded-2xl overflow-hidden bg-muted">
-              <img
-                src={product.image}
-                alt={product.name}
-                className="w-full h-full object-cover"
-              />
-            </div>
+            <ImageGallery mainImage={product.image} productName={product.name} />
 
             {/* Badges */}
-            <div className="absolute top-4 left-4 flex flex-col gap-2">
+            <div className="absolute top-4 left-4 flex flex-col gap-2 z-10">
               {isOutOfStock && (
                 <Badge variant="out-of-stock">Sem Estoque</Badge>
               )}
@@ -176,7 +203,7 @@ const ProductDetails = () => {
             {isAuthenticated && (
               <button
                 onClick={handleToggleFavorite}
-                className={`absolute top-4 right-4 w-11 h-11 rounded-full flex items-center justify-center transition-all duration-200 ${
+                className={`absolute top-4 right-4 w-10 h-10 sm:w-11 sm:h-11 rounded-full flex items-center justify-center transition-all duration-200 z-10 ${
                   isFav
                     ? "bg-destructive text-destructive-foreground"
                     : "bg-card/90 backdrop-blur-sm text-muted-foreground hover:text-destructive"
@@ -189,7 +216,7 @@ const ProductDetails = () => {
           </div>
 
           {/* Details */}
-          <div className="space-y-6">
+          <div className="space-y-4 sm:space-y-6">
             {/* Category */}
             <Badge variant={categoryBadgeVariant[product.category]}>
               {categoryLabels[product.category]}
