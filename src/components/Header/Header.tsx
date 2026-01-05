@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { CartTrigger } from "@/components/Cart";
+import { NotificationsPopover } from "@/components/Notifications";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -17,7 +18,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { ShoppingBag, User, LogOut, Package, Heart, Shield, Menu, X } from "lucide-react";
+import { ShoppingBag, User, LogOut, Package, Heart, Shield, Menu } from "lucide-react";
 
 export const Header = () => {
   const { isAuthenticated, isAdmin, profile, logout } = useAuth();
@@ -148,7 +149,8 @@ export const Header = () => {
         </nav>
 
         {/* Actions */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1 sm:gap-2">
+          {isAuthenticated && <NotificationsPopover />}
           <CartTrigger />
 
           {isAuthenticated ? (
