@@ -98,36 +98,36 @@ export const ProductCard = ({ product }: ProductCardProps) => {
         </div>
 
         {/* Content */}
-        <div className="p-4 flex flex-col flex-1">
+        <div className="p-3 sm:p-4 flex flex-col flex-1">
           {/* Rating */}
           {reviewStats.totalReviews > 0 ? (
-            <div className="flex items-center gap-1 mb-2">
-              <Star className="h-3.5 w-3.5 fill-warning text-warning" />
-              <span className="text-xs font-medium text-muted-foreground">
+            <div className="flex items-center gap-1 mb-1 sm:mb-2">
+              <Star className="h-3 w-3 sm:h-3.5 sm:w-3.5 fill-warning text-warning" />
+              <span className="text-[10px] sm:text-xs font-medium text-muted-foreground">
                 {reviewStats.averageRating.toFixed(1)} ({reviewStats.totalReviews})
               </span>
             </div>
           ) : product.rating ? (
-            <div className="flex items-center gap-1 mb-2">
-              <Star className="h-3.5 w-3.5 fill-warning text-warning" />
-              <span className="text-xs font-medium text-muted-foreground">
+            <div className="flex items-center gap-1 mb-1 sm:mb-2">
+              <Star className="h-3 w-3 sm:h-3.5 sm:w-3.5 fill-warning text-warning" />
+              <span className="text-[10px] sm:text-xs font-medium text-muted-foreground">
                 {product.rating.toFixed(1)}
               </span>
             </div>
           ) : null}
 
           {/* Name */}
-          <h3 className="font-medium text-card-foreground group-hover:text-primary transition-colors line-clamp-2 mb-2">
+          <h3 className="font-medium text-xs sm:text-sm md:text-base text-card-foreground group-hover:text-primary transition-colors line-clamp-2 mb-1 sm:mb-2">
             {product.name}
           </h3>
 
           {/* Price */}
-          <div className="flex items-center gap-2 mt-auto mb-3">
-            <span className="text-lg font-bold text-card-foreground">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-0.5 sm:gap-2 mt-auto mb-2 sm:mb-3">
+            <span className="text-sm sm:text-base md:text-lg font-bold text-card-foreground">
               {formatPrice(product.price)}
             </span>
             {product.originalPrice && (
-              <span className="text-sm text-muted-foreground line-through">
+              <span className="text-[10px] sm:text-xs md:text-sm text-muted-foreground line-through">
                 {formatPrice(product.originalPrice)}
               </span>
             )}
@@ -135,7 +135,7 @@ export const ProductCard = ({ product }: ProductCardProps) => {
 
           {/* Stock info */}
           {!isOutOfStock && product.stock <= 5 && (
-            <p className="text-xs text-warning mb-3">
+            <p className="text-[10px] sm:text-xs text-warning mb-2 sm:mb-3">
               Apenas {product.stock} em estoque
             </p>
           )}
@@ -144,16 +144,21 @@ export const ProductCard = ({ product }: ProductCardProps) => {
           <Button
             variant={isOutOfStock ? "secondary" : "cart"}
             size="sm"
-            className="w-full"
+            className="w-full text-xs sm:text-sm h-8 sm:h-9"
             onClick={handleAddToCart}
             disabled={isOutOfStock || !canAddMore}
           >
-            <ShoppingCart className="h-4 w-4" />
-            {isOutOfStock
-              ? "Indisponível"
-              : !canAddMore
-              ? "Máximo no carrinho"
-              : "Adicionar"}
+            <ShoppingCart className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+            <span className="hidden xs:inline">
+              {isOutOfStock
+                ? "Indisponível"
+                : !canAddMore
+                ? "Máximo"
+                : "Adicionar"}
+            </span>
+            <span className="xs:hidden">
+              {isOutOfStock ? "—" : "+"}
+            </span>
           </Button>
         </div>
       </article>
