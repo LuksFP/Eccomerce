@@ -4,9 +4,11 @@ import { useAuth } from "@/context/AuthContext";
 import { useOrders } from "@/context/OrdersContext";
 import { useFavorites } from "@/context/FavoritesContext";
 import { useNotifications } from "@/context/NotificationsContext";
+import { useProducts } from "@/context/ProductsContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Header } from "@/components/Header";
 import { Cart } from "@/components/Cart";
+import { SalesDashboard } from "@/components/Admin/SalesDashboard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -33,6 +35,7 @@ import {
   CheckCircle2,
   XCircle,
   Truck,
+  BarChart3,
 } from "lucide-react";
 
 const statusConfig = {
@@ -45,10 +48,13 @@ const statusConfig = {
 
 const ProfilePage = () => {
   const navigate = useNavigate();
-  const { user, profile, isAuthenticated, isLoading: authLoading } = useAuth();
+  const { user, profile, isAuthenticated, isAdmin, isLoading: authLoading } = useAuth();
   const { orders, isLoading: ordersLoading } = useOrders();
+  const { getAllOrders } = useOrders();
   const { favorites } = useFavorites();
+  const { products } = useProducts();
   const { requestPushPermission } = useNotifications();
+  const [allOrders, setAllOrders] = useState<any[]>([]);
 
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -78,6 +84,12 @@ const ProfilePage = () => {
       navigate("/auth");
     }
   }, [authLoading, isAuthenticated, navigate]);
+
+  useEffect(() => {
+    if (isAdmin) {
+      getAllOrders().then(setAllOrders);
+    }
+  }, [isAdmin, getAllOrders]);
 
   const handleSaveProfile = async () => {
     if (!user) return;
@@ -174,6 +186,12 @@ const ProfilePage = () => {
               <Settings className="h-4 w-4" />
               <span className="hidden sm:inline">Configurações</span>
             </TabsTrigger>
+            {isAdmin && (
+              <TabsTrigger value="admin" className="gap-2 text-primary">
+                <BarChart3 className="h-4 w-4" />
+                <span className="hidden sm:inline">Painel Admin</span>
+              </TabsTrigger>
+            )}
           </TabsList>
 
           {/* Profile Tab */}
@@ -408,6 +426,26 @@ const ProfilePage = () => {
               </CardContent>
             </Card>
           </TabsContent>
+
+          {/* Admin Tab */}
+          {isAdmin && (
+            <TabsContent value="admin" className="space-y-6">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h2 className="text-2xl font-bold flex items-center gap-2">
+                    <Shield className="h-6 w-6 text-primary" />
+                    Painel Administrativo
+                  </h2>
+                  <p className="text-muted-foreground">Dashboard de vendas e métricas</p>
+                </div>
+                <Button variant="outline" onClick={() => navigate("/admin")}>
+                  Gerenciar Produtos e Pedidos
+                  <ChevronRight className="h-4 w-4 ml-2" />
+                </Button>
+              </div>
+              <SalesDashboard orders={allOrders} products={products} />
+            </TabsContent>
+          )}
         </Tabs>
       </main>
     </div>
