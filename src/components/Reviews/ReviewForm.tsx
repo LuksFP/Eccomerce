@@ -7,9 +7,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Star, Loader2, ImagePlus, X } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Star, Loader2, ImagePlus, X, AlertTriangle } from "lucide-react";
 import { Link } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
+import { moderateReview } from "@/utils/contentModeration";
 
 type ReviewFormProps = {
   productId: string;
@@ -28,6 +30,7 @@ export const ReviewForm = ({ productId, onSuccess }: ReviewFormProps) => {
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [moderationWarning, setModerationWarning] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const alreadyReviewed = hasUserReviewed(productId);
@@ -149,6 +152,22 @@ export const ReviewForm = ({ productId, onSuccess }: ReviewFormProps) => {
     if (rating === 0) return;
     if (!title.trim() || !comment.trim()) return;
 
+    // Content moderation check
+    const moderationResult = moderateReview(title, comment, rating);
+    
+    if (!moderationResult.isApproved) {
+      setModerationWarning(
+        `Sua avaliação contém conteúdo que precisa ser revisado: ${moderationResult.reasons.join(", ")}. Por favor, ajuste o texto.`
+      );
+      toast({
+        title: "Conteúdo bloqueado",
+        description: "Sua avaliação não passou na moderação automática.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setModerationWarning(null);
     setIsSubmitting(true);
     
     // Upload images first
@@ -174,6 +193,12 @@ export const ReviewForm = ({ productId, onSuccess }: ReviewFormProps) => {
         <CardTitle className="text-lg">Escreva sua avaliação</CardTitle>
       </CardHeader>
       <CardContent>
+        {moderationWarning && (
+          <Alert variant="destructive" className="mb-4">
+            <AlertTriangle className="h-4 w-4" />
+            <AlertDescription>{moderationWarning}</AlertDescription>
+          </Alert>
+        )}
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Star Rating */}
           <div className="space-y-2">
