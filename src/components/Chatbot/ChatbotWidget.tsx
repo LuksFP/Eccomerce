@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,7 +15,9 @@ import {
   User,
   Minimize2,
   Sparkles,
+  Lock,
 } from "lucide-react";
+import { Link } from "react-router-dom";
 
 type Message = {
   id: string;
@@ -31,14 +34,16 @@ const quickReplies = [
 ];
 
 export const ChatbotWidget = () => {
+  const { isAuthenticated, session } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "welcome",
       role: "assistant",
-      content:
-        "Olá! 👋 Sou o assistente virtual da loja. Como posso ajudar você hoje?",
+      content: isAuthenticated 
+        ? "Olá! 👋 Sou o assistente virtual da loja. Como posso ajudar você hoje?"
+        : "Olá! 👋 Para usar o assistente virtual, faça login primeiro.",
       timestamp: new Date(),
     },
   ]);
@@ -47,6 +52,18 @@ export const ChatbotWidget = () => {
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
+  // Update welcome message when auth state changes
+  useEffect(() => {
+    setMessages([{
+      id: "welcome",
+      role: "assistant",
+      content: isAuthenticated 
+        ? "Olá! 👋 Sou o assistente virtual da loja. Como posso ajudar você hoje?"
+        : "Olá! 👋 Para usar o assistente virtual, faça login primeiro.",
+      timestamp: new Date(),
+    }]);
+  }, [isAuthenticated]);
+
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
@@ -54,18 +71,31 @@ export const ChatbotWidget = () => {
   }, [messages]);
 
   useEffect(() => {
-    if (isOpen && !isMinimized && inputRef.current) {
+    if (isOpen && !isMinimized && inputRef.current && isAuthenticated) {
       inputRef.current.focus();
     }
-  }, [isOpen, isMinimized]);
+  }, [isOpen, isMinimized, isAuthenticated]);
 
   const sendMessage = async (content: string) => {
-    if (!content.trim() || isLoading) return;
+    if (!content.trim() || isLoading || !isAuthenticated) return;
+
+    // Client-side validation
+    const trimmedContent = content.trim();
+    if (trimmedContent.length > 2000) {
+      const errorMessage: Message = {
+        id: `error-${Date.now()}`,
+        role: "assistant",
+        content: "Sua mensagem é muito longa. Por favor, reduza para no máximo 2000 caracteres.",
+        timestamp: new Date(),
+      };
+      setMessages((prev) => [...prev, errorMessage]);
+      return;
+    }
 
     const userMessage: Message = {
       id: `user-${Date.now()}`,
       role: "user",
-      content: content.trim(),
+      content: trimmedContent,
       timestamp: new Date(),
     };
 
@@ -290,27 +320,42 @@ export const ChatbotWidget = () => {
 
       {/* Input */}
       <CardContent className="pt-3 border-t border-border/50">
-        <form onSubmit={handleSubmit} className="flex gap-2">
-          <Input
-            ref={inputRef}
-            placeholder="Digite sua mensagem..."
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            disabled={isLoading}
-            className="flex-1"
-          />
-          <Button
-            type="submit"
-            size="icon"
-            disabled={!input.trim() || isLoading}
-          >
-            {isLoading ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <Send className="h-4 w-4" />
-            )}
-          </Button>
-        </form>
+        {isAuthenticated ? (
+          <form onSubmit={handleSubmit} className="flex gap-2">
+            <Input
+              ref={inputRef}
+              placeholder="Digite sua mensagem..."
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              disabled={isLoading}
+              className="flex-1"
+              maxLength={2000}
+            />
+            <Button
+              type="submit"
+              size="icon"
+              disabled={!input.trim() || isLoading}
+            >
+              {isLoading ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Send className="h-4 w-4" />
+              )}
+            </Button>
+          </form>
+        ) : (
+          <div className="text-center py-2">
+            <p className="text-sm text-muted-foreground mb-2">
+              Faça login para conversar com o assistente
+            </p>
+            <Button asChild size="sm" variant="outline">
+              <Link to="/auth" className="flex items-center gap-2">
+                <Lock className="h-3 w-3" />
+                Fazer Login
+              </Link>
+            </Button>
+          </div>
+        )}
       </CardContent>
     </Card>
   );
