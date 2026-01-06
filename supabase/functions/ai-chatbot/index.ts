@@ -107,7 +107,7 @@ serve(async (req) => {
   try {
     // Authentication check
     const authHeader = req.headers.get("authorization");
-    if (!authHeader) {
+    if (!authHeader?.startsWith("Bearer ")) {
       return new Response(
         JSON.stringify({ error: "Authentication required" }),
         { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -122,12 +122,14 @@ serve(async (req) => {
     }
 
     const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-      global: { headers: { authorization: authHeader } },
+      global: { headers: { Authorization: authHeader } },
     });
 
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    const token = authHeader.replace("Bearer ", "");
+    const { data, error: authError } = await supabase.auth.getClaims(token);
     
-    if (authError || !user) {
+    if (authError || !data?.claims) {
+      console.error("Auth error:", authError);
       return new Response(
         JSON.stringify({ error: "Invalid or expired authentication" }),
         { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -177,9 +179,9 @@ serve(async (req) => {
       throw new Error(`AI Gateway error: ${response.status}`);
     }
 
-    const data = await response.json();
+    const aiData = await response.json();
     const assistantResponse =
-      data.choices?.[0]?.message?.content ||
+      aiData.choices?.[0]?.message?.content ||
       "Desculpe, não consegui processar sua mensagem.";
 
     return new Response(
