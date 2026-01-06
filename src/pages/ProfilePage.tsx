@@ -8,7 +8,7 @@ import { useProducts } from "@/context/ProductsContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Header } from "@/components/Header";
 import { Cart } from "@/components/Cart";
-import { SalesDashboard } from "@/components/Admin/SalesDashboard";
+import { SalesDashboard, LowStockAlert, ExportReports, SalesTrendChart } from "@/components/Admin";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -430,7 +430,7 @@ const ProfilePage = () => {
           {/* Admin Tab */}
           {isAdmin && (
             <TabsContent value="admin" className="space-y-6">
-              <div className="flex items-center justify-between mb-4">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4">
                 <div>
                   <h2 className="text-2xl font-bold flex items-center gap-2">
                     <Shield className="h-6 w-6 text-primary" />
@@ -438,11 +438,22 @@ const ProfilePage = () => {
                   </h2>
                   <p className="text-muted-foreground">Dashboard de vendas e métricas</p>
                 </div>
-                <Button variant="outline" onClick={() => navigate("/admin")}>
-                  Gerenciar Produtos e Pedidos
-                  <ChevronRight className="h-4 w-4 ml-2" />
-                </Button>
+                <div className="flex gap-2">
+                  <ExportReports orders={allOrders} products={products} />
+                  <Button variant="outline" onClick={() => navigate("/admin")}>
+                    Gerenciar Produtos e Pedidos
+                    <ChevronRight className="h-4 w-4 ml-2" />
+                  </Button>
+                </div>
               </div>
+              
+              {/* Low Stock Alerts */}
+              <LowStockAlert products={products} threshold={10} />
+              
+              {/* Sales Trend Chart */}
+              <SalesTrendChart orders={allOrders} />
+              
+              {/* Sales Dashboard */}
               <SalesDashboard orders={allOrders} products={products} />
             </TabsContent>
           )}
