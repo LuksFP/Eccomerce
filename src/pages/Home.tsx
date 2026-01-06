@@ -5,10 +5,10 @@ import { useProducts } from "@/context/ProductsContext";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useOrderNotifications } from "@/hooks/useOrderNotifications";
 import { Header } from "@/components/Header";
-import { Filters } from "@/components/Filters";
+import { Filters, PriceRatingFilters } from "@/components/Filters";
 import { ProductList } from "@/components/ProductList";
 import { Cart } from "@/components/Cart";
-import { HeroSection, CategoryGrid, FeaturesBar } from "@/components/home";
+import { HeroSection, CategoryGrid, FeaturesBar, CouponsSection } from "@/components/home";
 import { SectionHeader } from "@/components/shared";
 
 const Home = () => {
@@ -16,13 +16,29 @@ const Home = () => {
   const { products } = useProducts();
   
   useOrderNotifications();
+
+  // Calculate max price from products
+  const maxPrice = useMemo(() => {
+    if (products.length === 0) return 10000;
+    return Math.ceil(Math.max(...products.map(p => p.price)) / 100) * 100;
+  }, [products]);
   
   const [isLoading, setIsLoading] = useState(true);
   const [filters, setFilters] = useState<FilterState>({
     search: searchParams.get("search") || "",
     category: (searchParams.get("category") as ProductCategory | "all") || "all",
     sortBy: (searchParams.get("sort") as SortOption) || "price-asc",
+    priceRange: [0, maxPrice],
+    minRating: 0,
   });
+
+  // Update price range when maxPrice changes
+  useEffect(() => {
+    setFilters(prev => ({
+      ...prev,
+      priceRange: [prev.priceRange[0], Math.min(prev.priceRange[1], maxPrice) || maxPrice]
+    }));
+  }, [maxPrice]);
 
   const debouncedSearch = useDebounce(filters.search, 300);
 
@@ -43,6 +59,14 @@ const Home = () => {
     setFilters((prev) => ({ ...prev, ...newFilters }));
   }, []);
 
+  const handlePriceChange = useCallback((priceRange: [number, number]) => {
+    setFilters((prev) => ({ ...prev, priceRange }));
+  }, []);
+
+  const handleRatingChange = useCallback((minRating: number) => {
+    setFilters((prev) => ({ ...prev, minRating }));
+  }, []);
+
   const filteredProducts = useMemo(() => {
     let result = [...products];
 
@@ -57,6 +81,20 @@ const Home = () => {
       result = result.filter((product) => product.category === filters.category);
     }
 
+    // Price filter
+    result = result.filter(
+      (product) =>
+        product.price >= filters.priceRange[0] &&
+        product.price <= filters.priceRange[1]
+    );
+
+    // Rating filter
+    if (filters.minRating > 0) {
+      result = result.filter(
+        (product) => (product.rating || 0) >= filters.minRating
+      );
+    }
+
     result.sort((a, b) => {
       switch (filters.sortBy) {
         case "price-asc":
@@ -67,13 +105,15 @@ const Home = () => {
           return a.name.localeCompare(b.name);
         case "name-desc":
           return b.name.localeCompare(a.name);
+        case "rating-desc":
+          return (b.rating || 0) - (a.rating || 0);
         default:
           return 0;
       }
     });
 
     return result;
-  }, [products, debouncedSearch, filters.category, filters.sortBy]);
+  }, [products, debouncedSearch, filters.category, filters.sortBy, filters.priceRange, filters.minRating]);
 
   const showHero = !filters.search && filters.category === "all";
 
@@ -87,6 +127,7 @@ const Home = () => {
           <>
             <HeroSection />
             <FeaturesBar />
+            <CouponsSection />
             <CategoryGrid />
           </>
         )}
@@ -104,11 +145,18 @@ const Home = () => {
               />
             )}
 
-            <div className="mb-6">
+            <div className="space-y-4 mb-6">
               <Filters
                 filters={filters}
                 onFilterChange={handleFilterChange}
                 resultsCount={filteredProducts.length}
+              />
+              <PriceRatingFilters
+                priceRange={filters.priceRange}
+                maxPrice={maxPrice}
+                minRating={filters.minRating}
+                onPriceChange={handlePriceChange}
+                onRatingChange={handleRatingChange}
               />
             </div>
 

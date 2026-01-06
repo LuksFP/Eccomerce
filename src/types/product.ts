@@ -12,12 +12,14 @@ export type Product = {
   originalPrice?: number;
 };
 
-export type SortOption = "price-asc" | "price-desc" | "name-asc" | "name-desc";
+export type SortOption = "price-asc" | "price-desc" | "name-asc" | "name-desc" | "rating-desc";
 
 export type FilterState = {
   search: string;
   category: ProductCategory | "all";
   sortBy: SortOption;
+  priceRange: [number, number];
+  minRating: number;
 };
 
 export const categoryLabels: Record<ProductCategory, string> = {
