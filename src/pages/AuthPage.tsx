@@ -175,11 +175,18 @@ const AuthPage = () => {
                   </div>
 
                   {/* Demo credentials */}
-                  <div className="p-3 rounded-lg bg-muted/50 text-sm">
-                    <p className="font-medium mb-1">Credenciais de demonstração:</p>
-                    <p className="text-muted-foreground">
-                      Admin: <span className="font-mono">admin@loja.com</span> / <span className="font-mono">admin123</span>
-                    </p>
+                  <div className="p-3 rounded-lg bg-muted/50 text-sm space-y-2">
+                    <p className="font-medium">Credenciais de demonstração:</p>
+                    <div className="space-y-1 text-muted-foreground">
+                      <p>
+                        <span className="text-primary font-medium">Admin:</span>{" "}
+                        <span className="font-mono">admin@loja.com</span> / <span className="font-mono">admin123</span>
+                      </p>
+                      <p>
+                        <span className="text-foreground font-medium">Cliente:</span>{" "}
+                        Crie sua conta na aba "Cadastrar"
+                      </p>
+                    </div>
                   </div>
                 </CardContent>
 

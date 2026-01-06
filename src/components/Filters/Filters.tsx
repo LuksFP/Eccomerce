@@ -78,6 +78,7 @@ export const Filters = ({ filters, onFilterChange, resultsCount }: FiltersProps)
               <SelectItem value="price-desc">Maior preço</SelectItem>
               <SelectItem value="name-asc">Nome A-Z</SelectItem>
               <SelectItem value="name-desc">Nome Z-A</SelectItem>
+              <SelectItem value="rating-desc">Melhor avaliação</SelectItem>
             </SelectContent>
           </Select>
         </div>
