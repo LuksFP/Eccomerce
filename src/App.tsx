@@ -16,6 +16,7 @@ import { CompareDrawer } from "@/components/Compare";
 import Home from "./pages/Home";
 import ProductDetails from "./pages/ProductDetails";
 import AuthPage from "./pages/AuthPage";
+import AdminLoginPage from "./pages/AdminLoginPage";
 import CheckoutPage from "./pages/CheckoutPage";
 import MyOrdersPage from "./pages/MyOrdersPage";
 import AdminPage from "./pages/AdminPage";
@@ -45,6 +46,7 @@ const App = () => (
                           <Route path="/" element={<Home />} />
                           <Route path="/produto/:id" element={<ProductDetails />} />
                           <Route path="/auth" element={<AuthPage />} />
+                          <Route path="/admin-login" element={<AdminLoginPage />} />
                           <Route path="/checkout" element={<CheckoutPage />} />
                           <Route path="/meus-pedidos" element={<MyOrdersPage />} />
                           <Route path="/pedido/:orderId" element={<OrderTrackingPage />} />
