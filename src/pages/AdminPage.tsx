@@ -39,7 +39,9 @@ import {
   Plus,
   Database,
   Loader2,
+  BarChart3,
 } from "lucide-react";
+import { SalesDashboard } from "@/components/Admin";
 
 const AdminPage = () => {
   const navigate = useNavigate();
@@ -211,11 +213,19 @@ const AdminPage = () => {
         </div>
 
         {/* Tabs */}
-        <Tabs defaultValue="products">
+        <Tabs defaultValue="dashboard">
           <TabsList className="mb-6">
+            <TabsTrigger value="dashboard">
+              <BarChart3 className="h-4 w-4 mr-2" />
+              Dashboard
+            </TabsTrigger>
             <TabsTrigger value="products">Produtos</TabsTrigger>
             <TabsTrigger value="orders">Pedidos</TabsTrigger>
           </TabsList>
+
+          <TabsContent value="dashboard">
+            <SalesDashboard orders={orders} products={products} />
+          </TabsContent>
 
           <TabsContent value="products">
             <Card>

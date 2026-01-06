@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { useCart } from "@/context/CartContext";
@@ -7,6 +7,8 @@ import { ShippingAddress, PaymentMethod, paymentMethodLabels } from "@/types/ord
 import { formatPrice } from "@/utils/formatPrice";
 import { Header } from "@/components/Header";
 import { Cart } from "@/components/Cart";
+import { ShippingCalculator } from "@/components/Shipping";
+import { ShippingOption } from "@/hooks/useShipping";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -26,6 +28,7 @@ import {
   Package,
   Tag,
   X,
+  Truck,
 } from "lucide-react";
 import { z } from "zod";
 
@@ -72,11 +75,18 @@ const CheckoutPage = () => {
   const [couponLoading, setCouponLoading] = useState(false);
   const [couponError, setCouponError] = useState("");
 
+  // Shipping state
+  const [selectedShipping, setSelectedShipping] = useState<ShippingOption | null>(null);
+
   // Calculate shipping and totals
-  const shippingCost = paymentMethod === "pix" ? 0 : 25;
+  const shippingCost = selectedShipping?.price || (paymentMethod === "pix" ? 0 : 25);
   const pixDiscount = paymentMethod === "pix" ? totalPrice * 0.05 : 0;
   const couponDiscount = appliedCoupon?.discount || 0;
   const finalTotal = Math.max(0, totalPrice + shippingCost - pixDiscount - couponDiscount);
+
+  const handleShippingSelect = useCallback((option: ShippingOption | null) => {
+    setSelectedShipping(option);
+  }, []);
 
   const handleApplyCoupon = async () => {
     if (!couponInput.trim()) return;
@@ -337,6 +347,12 @@ const CheckoutPage = () => {
         </CardContent>
       </Card>
 
+      {/* Shipping Calculator */}
+      <ShippingCalculator
+        onShippingSelect={handleShippingSelect}
+        initialCep={address.zipCode}
+      />
+
       <div className="flex gap-4">
         <Button type="button" variant="outline" onClick={() => navigate(-1)}>
           <ChevronLeft className="h-4 w-4 mr-1" />
@@ -595,11 +611,19 @@ const CheckoutPage = () => {
                       <span>{formatPrice(totalPrice)}</span>
                     </div>
                     <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">Frete</span>
+                      <span className="text-muted-foreground flex items-center gap-1">
+                        <Truck className="h-3 w-3" />
+                        Frete {selectedShipping ? `(${selectedShipping.name})` : ""}
+                      </span>
                       <span className={shippingCost === 0 ? "text-success" : ""}>
                         {shippingCost === 0 ? "Grátis" : formatPrice(shippingCost)}
                       </span>
                     </div>
+                    {selectedShipping && (
+                      <p className="text-xs text-muted-foreground">
+                        Entrega em {selectedShipping.days}
+                      </p>
+                    )}
                     {pixDiscount > 0 && (
                       <div className="flex justify-between text-sm">
                         <span className="text-muted-foreground">Desconto PIX (5%)</span>
