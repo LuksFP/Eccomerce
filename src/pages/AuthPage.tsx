@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ShoppingBag, Loader2, Eye, EyeOff, AlertCircle } from "lucide-react";
+import { ShoppingBag, Loader2, Eye, EyeOff, AlertCircle, Shield } from "lucide-react";
 import { z } from "zod";
 
 const loginSchema = z.object({
@@ -304,11 +304,18 @@ const AuthPage = () => {
           </Tabs>
         </Card>
 
-        <p className="text-center text-sm text-muted-foreground mt-6">
-          <Link to="/" className="hover:text-primary transition-colors">
+        <div className="flex flex-col items-center gap-3 mt-6">
+          <Link to="/" className="text-sm text-muted-foreground hover:text-primary transition-colors">
             ← Voltar para a loja
           </Link>
-        </p>
+          <Link 
+            to="/admin-login" 
+            className="flex items-center gap-1.5 text-xs text-muted-foreground/60 hover:text-muted-foreground transition-colors"
+          >
+            <Shield className="h-3 w-3" />
+            Acesso Administrativo
+          </Link>
+        </div>
       </div>
     </div>
   );

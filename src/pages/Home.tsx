@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
+import { Link } from "react-router-dom";
 import { useSearchParams } from "react-router-dom";
 import { FilterState, ProductCategory, SortOption } from "@/types/product";
 import { useProducts } from "@/context/ProductsContext";
@@ -179,9 +180,17 @@ const Home = () => {
                 Projeto de portfólio – E-commerce React + TypeScript
               </p>
             </div>
-            <p className="text-sm text-muted-foreground">
-              © 2026 LojaElegante. Todos os direitos reservados.
-            </p>
+            <div className="flex flex-col md:flex-row items-center gap-4 md:gap-6">
+              <Link 
+                to="/admin-login" 
+                className="text-xs text-muted-foreground/60 hover:text-muted-foreground transition-colors"
+              >
+                Acesso Administrativo
+              </Link>
+              <p className="text-sm text-muted-foreground">
+                © 2026 LojaElegante. Todos os direitos reservados.
+              </p>
+            </div>
           </div>
         </div>
       </footer>
