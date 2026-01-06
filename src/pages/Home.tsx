@@ -10,6 +10,7 @@ import { ProductList } from "@/components/ProductList";
 import { Cart } from "@/components/Cart";
 import { HeroSection, CategoryGrid, FeaturesBar, CouponsSection } from "@/components/home";
 import { SectionHeader } from "@/components/shared";
+import { RecommendedProducts } from "@/components/Recommendations";
 
 const Home = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -128,6 +129,7 @@ const Home = () => {
             <HeroSection />
             <FeaturesBar />
             <CouponsSection />
+            <RecommendedProducts />
             <CategoryGrid />
           </>
         )}

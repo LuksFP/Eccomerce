@@ -8,6 +8,8 @@ import { useFavorites } from "@/context/FavoritesContext";
 import { useAuth } from "@/context/AuthContext";
 import { useReviews } from "@/context/ReviewsContext";
 import { ShoppingCart, Star, Heart, Eye } from "lucide-react";
+import { CompareButton } from "@/components/Compare";
+import { useBrowsingHistory } from "@/hooks/useBrowsingHistory";
 
 type ProductCardProps = {
   product: Product;
@@ -18,6 +20,7 @@ export const ProductCard = ({ product }: ProductCardProps) => {
   const { isFavorite, toggleFavorite } = useFavorites();
   const { isAuthenticated } = useAuth();
   const { getProductStats } = useReviews();
+  const { addToHistory } = useBrowsingHistory();
   
   const reviewStats = getProductStats(product.id);
   
@@ -45,6 +48,10 @@ export const ProductCard = ({ product }: ProductCardProps) => {
     }
   };
 
+  const handleCardClick = () => {
+    addToHistory(product.id, product.category);
+  };
+
   const rating = reviewStats.totalReviews > 0 
     ? reviewStats.averageRating 
     : product.rating || 0;
@@ -54,6 +61,7 @@ export const ProductCard = ({ product }: ProductCardProps) => {
     <Link
       to={`/produto/${product.id}`}
       className="group block product-card-hover"
+      onClick={handleCardClick}
     >
       <article className="glass rounded-2xl overflow-hidden border border-border/30 h-full flex flex-col">
         {/* Image Container */}
@@ -94,9 +102,14 @@ export const ProductCard = ({ product }: ProductCardProps) => {
 
           {/* Action buttons overlay */}
           <div className="absolute bottom-0 left-0 right-0 p-3 flex justify-between items-end opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 transition-all duration-300">
-            {/* Quick view */}
-            <div className="w-10 h-10 rounded-xl bg-card/90 backdrop-blur-sm flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-card transition-colors cursor-pointer">
-              <Eye className="h-4 w-4" />
+            {/* Quick view and Compare */}
+            <div className="flex gap-2">
+              <div className="w-10 h-10 rounded-xl bg-card/90 backdrop-blur-sm flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-card transition-colors cursor-pointer">
+                <Eye className="h-4 w-4" />
+              </div>
+              <div className="w-10 h-10 rounded-xl bg-card/90 backdrop-blur-sm flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-card transition-colors">
+                <CompareButton product={product} />
+              </div>
             </div>
 
             {/* Favorite */}

@@ -1,7 +1,7 @@
 import { cn } from "@/lib/utils";
 
 interface SectionHeaderProps {
-  badge?: string;
+  badge?: string | React.ReactNode;
   title: string;
   highlight?: string;
   description?: string;

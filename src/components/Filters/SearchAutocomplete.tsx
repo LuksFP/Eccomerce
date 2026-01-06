@@ -1,9 +1,10 @@
-import { useState, useRef, useEffect, useMemo } from "react";
+import { useState, useRef, useEffect, useMemo, useCallback } from "react";
 import { useProducts } from "@/context/ProductsContext";
 import { Input } from "@/components/ui/input";
 import { Search, X, ArrowRight, Sparkles } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { formatPrice } from "@/utils/formatPrice";
+import { VoiceSearchButton } from "./VoiceSearchButton";
 
 type SearchAutocompleteProps = {
   value: string;
@@ -107,6 +108,11 @@ export const SearchAutocomplete = ({ value, onChange }: SearchAutocompleteProps)
     }
   };
 
+  const handleVoiceTranscript = useCallback((text: string) => {
+    onChange(text);
+    setIsOpen(true);
+  }, [onChange]);
+
   const showSuggestions = isOpen && (suggestions.length > 0 || (recentSearches.length > 0 && !value));
 
   return (
@@ -121,20 +127,23 @@ export const SearchAutocomplete = ({ value, onChange }: SearchAutocompleteProps)
           onChange={handleInputChange}
           onFocus={handleFocus}
           onKeyDown={handleKeyDown}
-          className="pl-11 pr-11 h-12 glass border-border/30 rounded-xl focus:border-primary/50 transition-colors"
+          className="pl-11 pr-20 h-12 glass border-border/30 rounded-xl focus:border-primary/50 transition-colors"
           autoComplete="off"
         />
-        {value && (
-          <button
-            onClick={() => {
-              onChange("");
-              inputRef.current?.focus();
-            }}
-            className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-          >
-            <X className="h-4 w-4" />
-          </button>
-        )}
+        <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
+          <VoiceSearchButton onTranscript={handleVoiceTranscript} />
+          {value && (
+            <button
+              onClick={() => {
+                onChange("");
+                inputRef.current?.focus();
+              }}
+              className="p-2 text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          )}
+        </div>
       </div>
 
       {showSuggestions && (
