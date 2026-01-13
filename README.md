@@ -177,12 +177,6 @@ Este projeto está sob a licença MIT.
 
 ---
 
-## 👨‍💻 Desenvolvido com
-
-Construído com ❤️ usando [Lovable](https://lovable.dev)
-
----
-
 <div align="center">
 
 **⭐ Se este projeto te ajudou, deixe uma estrela!**
