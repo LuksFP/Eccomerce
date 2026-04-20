@@ -15,7 +15,6 @@ import { ImageGallery } from "@/components/ProductDetails";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   ShoppingCart,
   Star,
@@ -344,50 +343,53 @@ const ProductDetails = () => {
             <Separator />
 
             {/* Benefits */}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
-                <Truck className="h-5 w-5 text-primary" />
-                <div>
-                  <p className="text-sm font-medium">Frete Grátis</p>
-                  <p className="text-xs text-muted-foreground">
-                    Para todo Brasil
-                  </p>
+            <div className="grid grid-cols-2 gap-3">
+              {[
+                { icon: Truck, title: "Frete Grátis", sub: "Acima de R$ 199" },
+                { icon: Shield, title: "Certificado", sub: "Testado em laboratório" },
+              ].map(({ icon: Icon, title, sub }) => (
+                <div key={title} className="flex items-center gap-3 p-3.5 rounded-xl border border-border/20 bg-card/40">
+                  <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                    <Icon className="h-4 w-4 text-primary" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-foreground">{title}</p>
+                    <p className="text-xs text-muted-foreground">{sub}</p>
+                  </div>
                 </div>
-              </div>
-              <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
-                <Shield className="h-5 w-5 text-primary" />
-                <div>
-                  <p className="text-sm font-medium">Garantia</p>
-                  <p className="text-xs text-muted-foreground">12 meses</p>
-                </div>
-              </div>
+              ))}
             </div>
           </div>
         </div>
 
         {/* Reviews Section */}
-        <section className="mt-16">
-          <div className="flex items-center gap-2 mb-8">
-            <MessageSquare className="h-6 w-6 text-primary" />
-            <h2 className="font-display text-2xl font-bold">Avaliações</h2>
+        <section className="mt-16 pt-12 border-t border-border/20">
+          <div className="flex items-end justify-between gap-4 mb-10">
+            <div>
+              <p className="text-xs font-bold tracking-[0.2em] uppercase text-primary mb-2">Comunidade</p>
+              <h2 className="font-display font-black text-2xl sm:text-3xl text-foreground">
+                O que dizem os <span className="text-gradient">atletas.</span>
+              </h2>
+            </div>
+            {reviewStats && reviewStats.totalReviews > 0 && (
+              <div className="hidden sm:flex items-center gap-2 text-sm text-muted-foreground">
+                <span className="font-black text-2xl text-foreground">{reviewStats.averageRating.toFixed(1)}</span>
+                <div className="flex gap-0.5">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} className={`h-4 w-4 ${i < Math.round(reviewStats.averageRating) ? "fill-warning text-warning" : "fill-muted text-muted"}`} />
+                  ))}
+                </div>
+                <span>({reviewStats.totalReviews})</span>
+              </div>
+            )}
           </div>
 
           <div className="grid lg:grid-cols-3 gap-8">
-            {/* Review Form */}
             <div className="lg:col-span-1">
               <ReviewForm productId={product.id} />
             </div>
-
-            {/* Reviews List */}
-            <div className="lg:col-span-2">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg">O que os clientes dizem</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <ReviewsList productId={product.id} />
-                </CardContent>
-              </Card>
+            <div className="lg:col-span-2 rounded-2xl border border-border/20 bg-card/30 backdrop-blur-sm p-6">
+              <ReviewsList productId={product.id} />
             </div>
           </div>
         </section>

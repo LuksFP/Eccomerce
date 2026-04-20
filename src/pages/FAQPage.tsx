@@ -9,8 +9,6 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import {
   Search,
   HelpCircle,
@@ -191,141 +189,104 @@ const FAQPage = () => {
       <Header />
       <Cart />
 
-      <main className="container py-8">
-        {/* Hero Section */}
+      <main className="container py-10 sm:py-16">
+        {/* Header */}
         <div className="text-center mb-12">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-4">
-            <HelpCircle className="h-8 w-8 text-primary" />
-          </div>
-          <h1 className="text-4xl font-bold mb-4">Central de Ajuda</h1>
-          <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-            Encontre respostas para as dúvidas mais frequentes ou entre em contato
-            com nossa equipe de suporte.
+          <p className="text-xs font-bold tracking-[0.2em] uppercase text-primary mb-4">Suporte</p>
+          <h1 className="font-display font-black text-4xl sm:text-5xl text-foreground mb-4">
+            Central de <span className="text-gradient">Ajuda.</span>
+          </h1>
+          <p className="text-muted-foreground text-base max-w-lg mx-auto mb-8">
+            Encontre respostas rápidas para as dúvidas mais comuns sobre pedidos, pagamentos e entregas.
           </p>
-
-          {/* Search */}
-          <div className="max-w-xl mx-auto mt-8 relative">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+          <div className="max-w-lg mx-auto relative">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder="Buscar perguntas..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-12 h-14 text-lg glass"
+              className="pl-11 h-12 rounded-full bg-secondary/30 border-border/30 focus:border-primary"
             />
           </div>
-
-          {/* Category Pills */}
-          <div className="flex flex-wrap justify-center gap-2 mt-6">
-            <Button
-              variant={selectedCategory === null ? "default" : "outline"}
-              size="sm"
+          <div className="flex flex-wrap justify-center gap-2 mt-5">
+            <button
               onClick={() => setSelectedCategory(null)}
+              className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all ${selectedCategory === null ? "bg-primary text-primary-foreground" : "border border-border/30 text-muted-foreground hover:text-foreground"}`}
             >
               Todas ({totalQuestions})
-            </Button>
-            {faqCategories.map((category) => {
-              const Icon = category.icon;
-              return (
-                <Button
-                  key={category.id}
-                  variant={selectedCategory === category.id ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setSelectedCategory(category.id)}
-                  className="gap-2"
-                >
-                  <Icon className="h-4 w-4" />
-                  {category.name} ({category.questions.length})
-                </Button>
-              );
-            })}
+            </button>
+            {faqCategories.map((cat) => (
+              <button
+                key={cat.id}
+                onClick={() => setSelectedCategory(cat.id)}
+                className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-bold transition-all ${selectedCategory === cat.id ? "bg-primary text-primary-foreground" : "border border-border/30 text-muted-foreground hover:text-foreground"}`}
+              >
+                <cat.icon className="h-3 w-3" />
+                {cat.name}
+              </button>
+            ))}
           </div>
         </div>
 
-        {/* FAQ Content */}
-        <div className="max-w-4xl mx-auto space-y-8">
-          {filteredCategories.map((category) => {
-            const Icon = category.icon;
-            return (
-              <Card key={category.id} className="glass">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-3">
-                    <div className="p-2 rounded-lg bg-primary/10">
-                      <Icon className="h-5 w-5 text-primary" />
-                    </div>
-                    {category.name}
-                    <Badge variant="secondary">{category.questions.length}</Badge>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <Accordion type="single" collapsible className="w-full">
-                    {category.questions.map((q, index) => (
-                      <AccordionItem key={index} value={`${category.id}-${index}`}>
-                        <AccordionTrigger className="text-left hover:text-primary">
-                          {q.question}
-                        </AccordionTrigger>
-                        <AccordionContent className="text-muted-foreground">
-                          {q.answer}
-                        </AccordionContent>
-                      </AccordionItem>
-                    ))}
-                  </Accordion>
-                </CardContent>
-              </Card>
-            );
-          })}
-
+        {/* FAQ accordion */}
+        <div className="max-w-3xl mx-auto space-y-6 mb-16">
+          {filteredCategories.map((category) => (
+            <div key={category.id} className="rounded-2xl border border-border/20 bg-card/40 backdrop-blur-sm overflow-hidden">
+              <div className="flex items-center gap-3 px-6 py-4 border-b border-border/10">
+                <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                  <category.icon className="h-4 w-4 text-primary" />
+                </div>
+                <span className="font-display font-bold text-base text-foreground">{category.name}</span>
+                <span className="ml-auto text-[10px] font-bold text-muted-foreground bg-muted rounded-full px-2 py-0.5">{category.questions.length}</span>
+              </div>
+              <div className="px-6">
+                <Accordion type="single" collapsible>
+                  {category.questions.map((q, i) => (
+                    <AccordionItem key={i} value={`${category.id}-${i}`} className="border-border/10">
+                      <AccordionTrigger className="text-left text-sm font-semibold hover:text-primary py-4">
+                        {q.question}
+                      </AccordionTrigger>
+                      <AccordionContent className="text-sm text-muted-foreground leading-relaxed pb-4">
+                        {q.answer}
+                      </AccordionContent>
+                    </AccordionItem>
+                  ))}
+                </Accordion>
+              </div>
+            </div>
+          ))}
           {filteredCategories.length === 0 && (
-            <Card className="glass">
-              <CardContent className="py-12 text-center">
-                <Search className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                <h3 className="text-lg font-semibold mb-2">
-                  Nenhum resultado encontrado
-                </h3>
-                <p className="text-muted-foreground">
-                  Tente buscar com outras palavras ou entre em contato conosco.
-                </p>
-              </CardContent>
-            </Card>
+            <div className="rounded-2xl border border-border/20 bg-card/40 py-16 text-center">
+              <Search className="h-10 w-10 mx-auto text-muted-foreground/40 mb-3" />
+              <p className="font-semibold text-foreground mb-1">Nenhum resultado</p>
+              <p className="text-sm text-muted-foreground">Tente buscar com outras palavras.</p>
+            </div>
           )}
         </div>
 
-        {/* Contact Section */}
-        <div className="max-w-4xl mx-auto mt-12">
-          <Card className="glass bg-gradient-to-br from-primary/5 to-primary/10">
-            <CardContent className="py-8">
-              <div className="text-center mb-8">
-                <MessageCircle className="h-12 w-12 mx-auto text-primary mb-4" />
-                <h2 className="text-2xl font-bold mb-2">Ainda tem dúvidas?</h2>
-                <p className="text-muted-foreground">
-                  Nossa equipe está pronta para ajudar você!
-                </p>
-              </div>
-
-              <div className="grid sm:grid-cols-3 gap-6">
-                <div className="text-center p-4 rounded-lg bg-background/50">
-                  <MessageCircle className="h-8 w-8 mx-auto text-primary mb-3" />
-                  <h3 className="font-semibold mb-1">Chat</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Atendimento 24h
-                  </p>
+        {/* Contact CTA */}
+        <div className="max-w-3xl mx-auto">
+          <div className="rounded-3xl border border-primary/15 bg-gradient-to-br from-primary/[0.07] via-transparent to-transparent p-8 sm:p-10 text-center relative overflow-hidden">
+            <div className="absolute -top-12 -right-12 w-48 h-48 bg-primary/8 rounded-full blur-[60px]" />
+            <p className="text-xs font-bold tracking-[0.2em] uppercase text-primary mb-3">Ainda tem dúvidas?</p>
+            <h2 className="font-display font-black text-2xl sm:text-3xl text-foreground mb-2">
+              Nossa equipe está pronta.
+            </h2>
+            <p className="text-muted-foreground text-sm mb-8">Especialistas em nutrição e fitness disponíveis 24h.</p>
+            <div className="grid sm:grid-cols-3 gap-4">
+              {[
+                { icon: MessageCircle, title: "Chat ao Vivo", sub: "Resposta em minutos" },
+                { icon: Phone, title: "0800 123 4567", sub: "Seg–Sex, 8h–18h" },
+                { icon: Mail, title: "suporte@vitalzone.com", sub: "Resposta em 24h" },
+              ].map(({ icon: Icon, title, sub }) => (
+                <div key={title} className="rounded-xl border border-border/20 bg-background/40 p-4 text-center">
+                  <Icon className="h-6 w-6 mx-auto text-primary mb-2" />
+                  <p className="font-semibold text-sm text-foreground">{title}</p>
+                  <p className="text-xs text-muted-foreground">{sub}</p>
                 </div>
-                <div className="text-center p-4 rounded-lg bg-background/50">
-                  <Phone className="h-8 w-8 mx-auto text-primary mb-3" />
-                  <h3 className="font-semibold mb-1">Telefone</h3>
-                  <p className="text-sm text-muted-foreground">
-                    0800 123 4567
-                  </p>
-                </div>
-                <div className="text-center p-4 rounded-lg bg-background/50">
-                  <Mail className="h-8 w-8 mx-auto text-primary mb-3" />
-                  <h3 className="font-semibold mb-1">Email</h3>
-                  <p className="text-sm text-muted-foreground">
-                    suporte@loja.com
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+              ))}
+            </div>
+          </div>
         </div>
       </main>
     </div>
