@@ -1,4 +1,4 @@
-export type ProductCategory = "eletronicos" | "roupas" | "acessorios";
+export type ProductCategory = "suplementos" | "fitness" | "bem-estar";
 
 export type Product = {
   id: string;
@@ -23,13 +23,13 @@ export type FilterState = {
 };
 
 export const categoryLabels: Record<ProductCategory, string> = {
-  eletronicos: "Eletrônicos",
-  roupas: "Roupas",
-  acessorios: "Acessórios",
+  suplementos: "Suplementos",
+  fitness: "Fitness",
+  "bem-estar": "Bem-estar",
 };
 
-export const categoryBadgeVariant: Record<ProductCategory, "electronics" | "clothing" | "accessories"> = {
-  eletronicos: "electronics",
-  roupas: "clothing",
-  acessorios: "accessories",
+export const categoryBadgeVariant: Record<ProductCategory, "supplements" | "fitness" | "wellness"> = {
+  suplementos: "supplements",
+  fitness: "fitness",
+  "bem-estar": "wellness",
 };

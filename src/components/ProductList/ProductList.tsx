@@ -1,7 +1,9 @@
+import { useRef } from "react";
 import { Product } from "@/types/product";
 import { ProductCard } from "@/components/ProductCard";
 import { Package } from "lucide-react";
 import { GlassCard } from "@/components/shared";
+import { motion, useInView } from "framer-motion";
 
 type ProductListProps = {
   products: Product[];
@@ -34,13 +36,30 @@ const EmptyState = () => (
       Nenhum produto encontrado
     </h3>
     <p className="text-muted-foreground max-w-md text-sm">
-      Não encontramos produtos que correspondam aos seus filtros. 
+      Não encontramos produtos que correspondam aos seus filtros.
       Tente ajustar sua busca ou limpar os filtros.
     </p>
   </GlassCard>
 );
 
+const itemVariants = {
+  hidden: { opacity: 0, y: 40, scale: 0.96 },
+  visible: (i: number) => ({
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: {
+      duration: 0.55,
+      delay: (i % 8) * 0.07,
+      ease: [0.22, 1, 0.36, 1],
+    },
+  }),
+};
+
 export const ProductList = ({ products, isLoading }: ProductListProps) => {
+  const ref = useRef<HTMLDivElement>(null);
+  const isInView = useInView(ref, { once: true, margin: "-60px" });
+
   if (isLoading) {
     return (
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
@@ -56,9 +75,20 @@ export const ProductList = ({ products, isLoading }: ProductListProps) => {
   }
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6 stagger-children">
-      {products.map((product) => (
-        <ProductCard key={product.id} product={product} />
+    <div
+      ref={ref}
+      className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6"
+    >
+      {products.map((product, i) => (
+        <motion.div
+          key={product.id}
+          custom={i}
+          variants={itemVariants}
+          initial="hidden"
+          animate={isInView ? "visible" : "hidden"}
+        >
+          <ProductCard product={product} />
+        </motion.div>
       ))}
     </div>
   );

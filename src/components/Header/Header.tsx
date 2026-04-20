@@ -27,9 +27,9 @@ export const Header = () => {
 
   const navLinks = [
     { to: "/", label: "Início" },
-    { to: "/?category=eletronicos", label: "Eletrônicos" },
-    { to: "/?category=roupas", label: "Roupas" },
-    { to: "/?category=acessorios", label: "Acessórios" },
+    { to: "/?category=suplementos", label: "Suplementos" },
+    { to: "/?category=fitness", label: "Fitness" },
+    { to: "/?category=bem-estar", label: "Bem-estar" },
   ];
 
   return (
@@ -50,7 +50,7 @@ export const Header = () => {
                   <ShoppingBag className="h-5 w-5 text-primary-foreground" />
                 </div>
                 <span className="font-display text-xl font-bold">
-                  Loja<span className="text-gradient">Elegante</span>
+                  Vital<span className="text-gradient">Zone</span>
                 </span>
               </SheetTitle>
             </SheetHeader>
@@ -134,7 +134,7 @@ export const Header = () => {
             <ShoppingBag className="h-5 w-5 text-primary-foreground" />
           </div>
           <span className="font-display text-xl font-bold text-foreground hidden sm:inline">
-            Loja<span className="text-gradient">Elegante</span>
+            Vital<span className="text-gradient">Zone</span>
           </span>
         </Link>
 

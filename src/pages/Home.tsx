@@ -9,7 +9,7 @@ import { Header } from "@/components/Header";
 import { Filters, PriceRatingFilters } from "@/components/Filters";
 import { ProductList } from "@/components/ProductList";
 import { Cart } from "@/components/Cart";
-import { HeroSection, CategoryGrid, FeaturesBar, CouponsSection } from "@/components/home";
+import { HeroSection, CategoryGrid, FeaturesBar, CouponsSection, MarqueeTicker } from "@/components/home";
 import { SectionHeader } from "@/components/shared";
 import { RecommendedProducts } from "@/components/Recommendations";
 
@@ -129,6 +129,7 @@ const Home = () => {
           <>
             <HeroSection />
             <FeaturesBar />
+            <MarqueeTicker />
             <CouponsSection />
             <RecommendedProducts />
             <CategoryGrid />
@@ -174,10 +175,10 @@ const Home = () => {
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             <div>
               <h3 className="font-display text-xl font-bold text-foreground mb-2">
-                Loja<span className="text-gradient">Elegante</span>
+                Vital<span className="text-gradient">Zone</span>
               </h3>
               <p className="text-sm text-muted-foreground">
-                Projeto de portfólio – E-commerce React + TypeScript
+                Suplementos, Fitness &amp; Bem-estar Premium
               </p>
             </div>
             <div className="flex flex-col md:flex-row items-center gap-4 md:gap-6">

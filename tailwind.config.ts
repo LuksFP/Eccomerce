@@ -30,8 +30,8 @@ export default {
     },
     extend: {
       fontFamily: {
-        sans: ["Space Grotesk", "system-ui", "sans-serif"],
-        display: ["Outfit", "system-ui", "sans-serif"],
+        sans: ["Plus Jakarta Sans", "system-ui", "sans-serif"],
+        display: ["Syne", "system-ui", "sans-serif"],
       },
       colors: {
         border: "hsl(var(--border))",
@@ -76,9 +76,9 @@ export default {
           foreground: "hsl(var(--warning-foreground))",
         },
         category: {
-          electronics: "hsl(var(--category-electronics))",
-          clothing: "hsl(var(--category-clothing))",
-          accessories: "hsl(var(--category-accessories))",
+          supplements: "hsl(var(--category-supplements))",
+          fitness: "hsl(var(--category-fitness))",
+          wellness: "hsl(var(--category-wellness))",
         },
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
