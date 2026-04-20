@@ -3,3 +3,8 @@ export { CategoryGrid } from "./CategoryGrid";
 export { FeaturesBar } from "./FeaturesBar";
 export { CouponsSection } from "./CouponsSection";
 export { MarqueeTicker } from "./MarqueeTicker";
+export { FeaturedStrip } from "./FeaturedStrip";
+export { TestimonialsSection } from "./TestimonialsSection";
+export { PromoBanner } from "./PromoBanner";
+export { NewsletterSection } from "./NewsletterSection";
+export { FooterSection } from "./FooterSection";

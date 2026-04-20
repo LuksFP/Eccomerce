@@ -1,158 +1,209 @@
 import { useEffect, useRef } from "react";
-import { ArrowRight, Flame, ShieldCheck, Zap } from "lucide-react";
+import { ArrowRight, ShieldCheck, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { AnimatedCounter } from "@/components/shared";
 import { motion, useScroll, useTransform } from "framer-motion";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 gsap.registerPlugin(ScrollTrigger);
 
-const fadeUp = {
-  hidden: { opacity: 0, y: 40 },
-  visible: (i = 0) => ({
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.7, delay: i * 0.12, ease: [0.22, 1, 0.36, 1] },
-  }),
-};
-
 const stats = [
-  { value: 50000, suffix: "+", label: "Atletas Ativos" },
-  { value: 200, suffix: "+", label: "Produtos" },
-  { value: 99, suffix: "%", label: "Satisfação" },
-  { value: 24, suffix: "h", label: "Suporte" },
+  { value: "50k+", label: "Atletas" },
+  { value: "200+", label: "Produtos" },
+  { value: "99%", label: "Satisfação" },
+  { value: "24h", label: "Suporte" },
 ];
 
 export const HeroSection = () => {
   const sectionRef = useRef<HTMLElement>(null);
-  const orbRef = useRef<HTMLDivElement>(null);
+  const imgRef = useRef<HTMLDivElement>(null);
+  const wordRef = useRef<HTMLSpanElement>(null);
 
-  const { scrollYProgress } = useScroll({ target: sectionRef, offset: ["start start", "end start"] });
-  const yParallax = useTransform(scrollYProgress, [0, 1], ["0%", "30%"]);
-  const opacityHero = useTransform(scrollYProgress, [0, 0.6], [1, 0]);
+  const { scrollYProgress } = useScroll({
+    target: sectionRef,
+    offset: ["start start", "end start"],
+  });
+  const imgY = useTransform(scrollYProgress, [0, 1], ["0%", "18%"]);
+  const bgY = useTransform(scrollYProgress, [0, 1], ["0%", "12%"]);
 
   useEffect(() => {
-    if (!orbRef.current) return;
-    gsap.to(orbRef.current, {
-      y: -30,
-      x: 15,
-      duration: 4,
-      ease: "sine.inOut",
-      yoyo: true,
-      repeat: -1,
-    });
+    if (!imgRef.current) return;
+    gsap.fromTo(
+      imgRef.current,
+      { clipPath: "inset(0 100% 0 0)" },
+      { clipPath: "inset(0 0% 0 0)", duration: 1.1, delay: 0.6, ease: "expo.out" }
+    );
+  }, []);
+
+  useEffect(() => {
+    if (!wordRef.current) return;
+    gsap.fromTo(
+      wordRef.current,
+      { x: -60, opacity: 0 },
+      { x: 0, opacity: 1, duration: 0.9, delay: 0.2, ease: "expo.out" }
+    );
   }, []);
 
   return (
-    <section ref={sectionRef} className="relative overflow-hidden py-10 sm:py-16 lg:py-24">
-      {/* Background blobs */}
-      <motion.div style={{ y: yParallax }} className="absolute inset-0 -z-10 pointer-events-none">
-        <div ref={orbRef} className="absolute top-1/4 left-1/3 w-[500px] h-[500px] bg-primary/15 rounded-full blur-[130px]" />
-        <div className="absolute bottom-0 right-1/4 w-80 h-80 bg-[hsl(28_96%_58%/0.08)] rounded-full blur-[100px]" />
-        <div className="absolute top-10 right-10 w-60 h-60 bg-[hsl(270_80%_68%/0.06)] rounded-full blur-[80px]" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_40%_at_50%_-10%,hsl(82_90%_48%/0.08),transparent)]" />
+    <section
+      ref={sectionRef}
+      className="relative overflow-hidden min-h-[88vh] flex flex-col justify-center"
+    >
+      {/* Background watermark */}
+      <motion.div
+        style={{ y: bgY }}
+        className="absolute inset-0 -z-10 pointer-events-none select-none overflow-hidden"
+      >
+        <span
+          className="absolute -top-8 -left-8 font-display font-black text-[22vw] leading-none text-primary/[0.04] whitespace-nowrap"
+          aria-hidden
+        >
+          VITAL
+        </span>
+        <span
+          className="absolute bottom-0 right-0 font-display font-black text-[22vw] leading-none text-primary/[0.04] whitespace-nowrap"
+          aria-hidden
+        >
+          ZONE
+        </span>
+        <div className="absolute top-1/3 left-1/4 w-[600px] h-[600px] bg-primary/10 rounded-full blur-[160px]" />
+        <div className="absolute bottom-1/4 right-1/3 w-80 h-80 bg-[hsl(28_96%_58%/0.07)] rounded-full blur-[120px]" />
       </motion.div>
 
-      <motion.div style={{ opacity: opacityHero }} className="container">
-        <div className="flex flex-col lg:flex-row items-center gap-10 lg:gap-20">
-          {/* Content */}
-          <div className="flex-1 text-center lg:text-left">
+      <div className="container relative">
+        <div className="grid lg:grid-cols-[1fr_420px] gap-0 items-center min-h-[70vh]">
+          {/* Left — text */}
+          <div className="py-16 lg:py-0 z-10">
             <motion.div
-              variants={fadeUp}
-              initial="hidden"
-              animate="visible"
-              custom={0}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass border border-primary/25 mb-6"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+              className="inline-flex items-center gap-2 text-xs font-bold tracking-[0.2em] uppercase text-primary mb-8 border border-primary/25 px-4 py-2 rounded-full"
             >
-              <Flame className="h-4 w-4 text-primary" />
-              <span className="text-sm font-semibold text-primary tracking-wide">O Nicho #1 do E-commerce em 2026</span>
+              <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+              Nicho #1 E-commerce 2026
             </motion.div>
 
-            <motion.h1
-              variants={fadeUp}
-              initial="hidden"
-              animate="visible"
-              custom={1}
-              className="font-display text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-bold tracking-tight mb-6 leading-[1.05]"
-            >
-              <span className="text-foreground">Sua Jornada</span>
-              <br />
-              <span className="text-gradient">para uma Vida</span>
-              <br />
-              <span className="text-foreground">mais Saudável</span>
-            </motion.h1>
+            <div className="overflow-hidden mb-2">
+              <motion.h1
+                initial={{ y: "110%" }}
+                animate={{ y: 0 }}
+                transition={{ duration: 0.8, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
+                className="font-display font-black text-[clamp(3.5rem,8vw,7rem)] leading-[0.9] tracking-tight text-foreground"
+              >
+                SUA
+              </motion.h1>
+            </div>
+            <div className="overflow-hidden mb-2">
+              <motion.h1
+                initial={{ y: "110%" }}
+                animate={{ y: 0 }}
+                transition={{ duration: 0.8, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
+                className="font-display font-black text-[clamp(3.5rem,8vw,7rem)] leading-[0.9] tracking-tight text-gradient"
+              >
+                JORNADA
+              </motion.h1>
+            </div>
+            <div className="overflow-hidden mb-8">
+              <motion.h1
+                initial={{ y: "110%" }}
+                animate={{ y: 0 }}
+                transition={{ duration: 0.8, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
+                className="font-display font-black text-[clamp(3.5rem,8vw,7rem)] leading-[0.9] tracking-tight text-foreground"
+              >
+                COMEÇA
+                <span ref={wordRef} className="inline-block ml-4 text-primary align-middle text-[0.55em] leading-none border border-primary/40 rounded-full px-4 py-1">
+                  AQUI
+                </span>
+              </motion.h1>
+            </div>
 
             <motion.p
-              variants={fadeUp}
-              initial="hidden"
-              animate="visible"
-              custom={2}
-              className="text-muted-foreground text-base sm:text-lg lg:text-xl max-w-xl mx-auto lg:mx-0 mb-8"
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7, delay: 0.5, ease: [0.22, 1, 0.36, 1] }}
+              className="text-muted-foreground text-base sm:text-lg max-w-sm mb-10 leading-relaxed"
             >
-              Suplementos premium, equipamentos fitness e produtos de bem-estar selecionados por especialistas para potencializar seus resultados.
+              Suplementos premium, equipamentos fitness e produtos de bem-estar
+              selecionados para potencializar seus resultados.
             </motion.p>
 
             <motion.div
-              variants={fadeUp}
-              initial="hidden"
-              animate="visible"
-              custom={3}
-              className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start"
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7, delay: 0.6, ease: [0.22, 1, 0.36, 1] }}
+              className="flex flex-wrap gap-4 mb-12"
             >
-              <Button size="lg" className="group glow font-semibold text-base">
+              <Button size="lg" className="glow font-bold text-sm tracking-wide rounded-full px-8">
                 Explorar Produtos
-                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                <ArrowRight className="h-4 w-4" />
               </Button>
-              <Button size="lg" variant="outline" className="glass border-border/50 font-semibold text-base">
+              <Button size="lg" variant="ghost" className="font-semibold text-sm rounded-full px-8 border border-border/40">
                 Ver Suplementos
               </Button>
             </motion.div>
 
+            {/* Stats — raw strip, no cards */}
             <motion.div
-              variants={fadeUp}
-              initial="hidden"
-              animate="visible"
-              custom={4}
-              className="flex flex-wrap justify-center lg:justify-start gap-6 mt-10 pt-10 border-t border-border/30"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.8, delay: 0.8 }}
+              className="flex items-stretch divide-x divide-border/40 border-t border-border/30 pt-8"
             >
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Zap className="h-4 w-4 text-primary" />
-                <span>Entrega Rápida</span>
-              </div>
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <ShieldCheck className="h-4 w-4 text-primary" />
-                <span>Produtos Certificados</span>
-              </div>
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Flame className="h-4 w-4 text-[hsl(28_96%_58%)]" />
-                <span>Fórmulas Premium</span>
-              </div>
+              {stats.map((s) => (
+                <div key={s.label} className="flex-1 pr-6 first:pl-0 pl-6">
+                  <div className="font-display font-black text-2xl sm:text-3xl text-foreground leading-none mb-1">
+                    {s.value}
+                  </div>
+                  <div className="text-xs text-muted-foreground uppercase tracking-widest">
+                    {s.label}
+                  </div>
+                </div>
+              ))}
             </motion.div>
           </div>
 
-          {/* Stats grid */}
-          <div className="flex-shrink-0 grid grid-cols-2 gap-4 lg:gap-5">
-            {stats.map((stat, i) => (
-              <motion.div
-                key={stat.label}
-                variants={fadeUp}
-                initial="hidden"
-                animate="visible"
-                custom={i + 2}
-                whileHover={{ y: -6, scale: 1.03 }}
-                transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                className="glass rounded-2xl p-6 border border-border/30 text-center hover-glow cursor-default"
-              >
-                <div className="font-display text-3xl sm:text-4xl font-bold text-gradient mb-1">
-                  <AnimatedCounter value={stat.value} suffix={stat.suffix} />
+          {/* Right — product image (overflows container intentionally) */}
+          <div className="hidden lg:block relative h-full min-h-[70vh]">
+            <motion.div
+              ref={imgRef}
+              style={{ y: imgY }}
+              className="absolute inset-0 -right-16 top-0"
+            >
+              <div className="relative h-full w-full overflow-hidden rounded-l-[3rem]">
+                <img
+                  src="https://images.unsplash.com/photo-1594381898411-846e7d193883?w=800&q=85"
+                  alt="Atleta VitalZone"
+                  className="h-full w-full object-cover object-center"
+                />
+                {/* Gradient blend left */}
+                <div className="absolute inset-0 bg-gradient-to-r from-background via-background/20 to-transparent" />
+                {/* Gradient blend bottom */}
+                <div className="absolute inset-0 bg-gradient-to-t from-background/60 via-transparent to-transparent" />
+
+                {/* Floating badge */}
+                <div className="absolute bottom-8 left-8 glass rounded-2xl px-5 py-4 border border-border/30">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center">
+                      <Zap className="h-5 w-5 text-primary" />
+                    </div>
+                    <div>
+                      <div className="text-xs text-muted-foreground">Novo</div>
+                      <div className="font-semibold text-sm text-foreground">Pré-Treino Xtreme</div>
+                    </div>
+                  </div>
                 </div>
-                <div className="text-xs sm:text-sm text-muted-foreground font-medium">{stat.label}</div>
-              </motion.div>
-            ))}
+
+                {/* Certified badge */}
+                <div className="absolute top-8 right-8 glass rounded-full px-4 py-2 border border-border/30 flex items-center gap-2">
+                  <ShieldCheck className="h-4 w-4 text-primary" />
+                  <span className="text-xs font-semibold text-foreground">Certificado</span>
+                </div>
+              </div>
+            </motion.div>
           </div>
         </div>
-      </motion.div>
+      </div>
     </section>
   );
 };
